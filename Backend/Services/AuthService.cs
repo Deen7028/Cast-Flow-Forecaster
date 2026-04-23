@@ -1,6 +1,6 @@
 using Backend.DTOs.Auth;
 using Backend.Interfaces;
-using Infrastructure.Data.Context;
+using Backend.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services;

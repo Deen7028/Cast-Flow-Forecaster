@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Infrastructure.Data.Entities;
+namespace Backend.Data.Entities;
 
 public partial class tmCategories
 {

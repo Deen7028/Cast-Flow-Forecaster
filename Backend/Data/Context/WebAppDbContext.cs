@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Infrastructure.Data.Entities;
+using Backend.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Data.Context;
+namespace Backend.Data.Context;
 
 public partial class WebAppDbContext : DbContext
 {

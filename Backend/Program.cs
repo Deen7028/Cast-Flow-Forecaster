@@ -1,29 +1,45 @@
 using Backend.Interfaces;
 using Backend.Services;
-using Infrastructure.Data.Context;
+using Backend.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowNextJs", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddDbContext<WebAppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WebAppConnection")));
 
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<Program>()
+    .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Service")))
+    .AsMatchingInterface()
+    .WithScopedLifetime()
+);
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference(); // ใช้ Scalar แทน Swagger UI
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
-app.MapControllers();
 
 app.UseRouting();
 

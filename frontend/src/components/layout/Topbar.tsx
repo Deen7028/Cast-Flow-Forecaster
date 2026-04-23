@@ -1,23 +1,38 @@
 'use client';
 import React from 'react';
-import { Box, Typography, Button, Breadcrumbs, Link } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Box, Avatar } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 
-export const Topbar = () => {
+interface ITopbarProps {
+    onOpenSidebar: () => void;
+}
+
+export const Topbar = ({ onOpenSidebar }: ITopbarProps) => {
     return (
-        <Box sx={{ height: 54, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', px: 3, justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, fontFamily: 'Syne' }}>
-                    Overview
-                </Typography>
-                <Typography sx={{ color: 'text.disabled', fontSize: 11, fontFamily: 'monospace' }}>
-                    Q3 2025 · Jul–Sep
-                </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button variant="contained" size="small" sx={{ color: '#000', fontWeight: 700, borderRadius: 1.5 }}>
-                    ＋ Add Transaction
-                </Button>
-            </Box>
-        </Box>
+        <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Toolbar sx={{ justifyContent: 'space-between' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton
+                        onClick={onOpenSidebar}
+                        sx={{ mr: 2, display: { md: 'none' }, color: 'text.primary' }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant="h6" color="text.primary" sx={{ fontWeight: 700, fontFamily: 'Syne' }}>
+                        Enterprise Finance
+                    </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <IconButton sx={{ color: 'text.secondary' }}>
+                        <NotificationsNoneIcon />
+                    </IconButton>
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', color: '#000', fontSize: '0.875rem', fontWeight: 700 }}>
+                        KM
+                    </Avatar>
+                </Box>
+            </Toolbar>
+        </AppBar>
     );
 };

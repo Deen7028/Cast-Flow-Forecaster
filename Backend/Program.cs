@@ -1,18 +1,53 @@
+using Backend.Interfaces;
+using Backend.Services;
+using Backend.Data.Context;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowNextJs", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+builder.Services.AddDbContext<WebAppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WebAppConnection")));
+
+
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<Program>()
+    .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Service")))
+    .AsMatchingInterface()
+    .WithScopedLifetime()
+);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors("AllowNextJs");
+
+app.UseAuthorization();
+
+app.MapControllers();
 
 var summaries = new[]
 {
@@ -21,7 +56,7 @@ var summaries = new[]
 
 app.MapGet("/weatherforecast", () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
+    var forecast = Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

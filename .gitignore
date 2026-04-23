@@ -1,0 +1,19 @@
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Node.js
+dist/
+build/
+.next/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -60,7 +60,11 @@
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[10.0.0, )"
+              "version": "[10.0.7, )"
+            },
+            "Scalar.AspNetCore": {
+              "target": "Package",
+              "version": "[2.14.3, )"
             }
           },
           "imports": [

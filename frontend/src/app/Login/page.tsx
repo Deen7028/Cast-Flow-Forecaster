@@ -15,7 +15,7 @@ import {
   Container,Grid
 } from '@mui/material';
 
-export default function LoginPage(){ 
+export default function LoginPage(){
   return (
     <Box 
       sx={{ 

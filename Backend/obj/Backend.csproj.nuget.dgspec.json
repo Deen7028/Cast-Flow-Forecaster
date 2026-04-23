@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\project_cashFlow\\Backend\\Backend.csproj": {}
+    "d:\\Cast-Flow-Forecaster\\Backend\\Backend.csproj": {}
   },
   "projects": {
-    "D:\\project_cashFlow\\Backend\\Backend.csproj": {
+    "d:\\Cast-Flow-Forecaster\\Backend\\Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\project_cashFlow\\Backend\\Backend.csproj",
+        "projectUniqueName": "d:\\Cast-Flow-Forecaster\\Backend\\Backend.csproj",
         "projectName": "Backend",
-        "projectPath": "D:\\project_cashFlow\\Backend\\Backend.csproj",
-        "packagesPath": "C:\\Users\\comsa\\.nuget\\packages\\",
-        "outputPath": "D:\\project_cashFlow\\Backend\\obj\\",
+        "projectPath": "d:\\Cast-Flow-Forecaster\\Backend\\Backend.csproj",
+        "packagesPath": "C:\\Users\\ASUS\\.nuget\\packages\\",
+        "outputPath": "d:\\Cast-Flow-Forecaster\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\comsa\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\ASUS\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"

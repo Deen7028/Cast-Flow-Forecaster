@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Backend.Data.Entities;
 using Microsoft.EntityFrameworkCore;

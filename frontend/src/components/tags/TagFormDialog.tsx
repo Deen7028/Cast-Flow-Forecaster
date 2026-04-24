@@ -1,12 +1,12 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Switch, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Switch, Box, Grid } from '@mui/material';
 import { ITag } from '@/interfaces';
 
 interface ITagFormDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSaved: () => void; // เอาไว้สั่งให้หน้ารายการดึงข้อมูลใหม่
+    onSaved: () => void; 
     objEditData: ITag | null; // ถ้าเป็น null คือสร้างใหม่, ถ้ามีข้อมูลคือโหมด Edit
 }
 
@@ -19,6 +19,7 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
     // เมื่อเปิด Modal ให้เช็คว่ามีข้อมูลส่งมาให้แก้ไหม
     useEffect(() => {
         if (objEditData) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setSName(objEditData.sName || '');
             setSColorCode(objEditData.sColorCode || '#00e5a0');
             setIsActive(objEditData.isActive ?? true);
@@ -39,7 +40,7 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
                 isActive: isActive
             };
 
-            const objResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Tags`, {
+            const objResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL as string }/Tags`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(objPayload)
@@ -63,45 +64,54 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
         <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>{objEditData ? 'Edit Tag' : 'New Tag'}</DialogTitle>
             <DialogContent dividers>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
-                    <TextField 
-                        label="Tag Name" 
-                        variant="outlined" 
-                        fullWidth 
-                        value={sName}
-                        onChange={(e) => setSName(e.target.value)}
-                    />
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                <Grid container spacing={3} sx={{ pt: 1 }}>
+                    <Grid size={12}>
                         <TextField 
-                            label="Color Code" 
+                            label="Tag Name" 
                             variant="outlined" 
                             fullWidth 
-                            value={sColorCode}
-                            onChange={(e) => setSColorCode(e.target.value)}
-                            sx={{ flex: 1 }}
+                            value={sName}
+                            onChange={(e) => setSName(e.target.value)}
                         />
-                        <Box
-                            component="input"
-                            type="color"
-                            value={sColorCode}
-                            onChange={(e) => setSColorCode(e.target.value)}
-                            sx={{
-                                width: 56,
-                                height: 56,
-                                p: 0.5,
-                                border: '1px solid',
-                                borderColor: 'divider',
-                                borderRadius: 1,
-                                cursor: 'pointer',
-                                bgcolor: 'background.paper'
-                            }}
+                    </Grid>
+                    <Grid size={12}>
+                        <Grid container spacing={2}>
+                            <Grid size="grow">
+                                <TextField 
+                                    label="Color Code" 
+                                    variant="outlined" 
+                                    fullWidth 
+                                    value={sColorCode}
+                                    onChange={(e) => setSColorCode(e.target.value)}
+                                />
+                            </Grid>
+                            <Grid size="auto">
+                                <Box
+                                    component="input"
+                                    type="color"
+                                    value={sColorCode}
+                                    onChange={(e) => setSColorCode(e.target.value)}
+                                    sx={{
+                                        width: 56,
+                                        height: 56,
+                                        p: 0.5,
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        borderRadius: 1,
+                                        cursor: 'pointer',
+                                        bgcolor: 'background.paper'
+                                    }}
+                                />
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid size={12}>
+                        <FormControlLabel 
+                            control={<Switch checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />} 
+                            label="Active Status" 
                         />
-                    </Box>
-                    <FormControlLabel 
-                        control={<Switch checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />} 
-                        label="Active Status" 
-                    />
-                </Box>
+                    </Grid>
+                </Grid>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} disabled={isLoading}>Cancel</Button>

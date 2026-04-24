@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Button, Box, CircularProgress, Stack } from '@mui/material';
+import { Typography, Button, Box, Grid } from '@mui/material';
 import { TagCard } from './TagCard';
 import { TagFormDialog } from './TagFormDialog';
 import { ITag } from '@/interfaces';
@@ -31,6 +31,7 @@ export const TagsContainer = () => {
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchTags();
     }, [fetchTags]);
 
@@ -89,20 +90,25 @@ export const TagsContainer = () => {
                 <Typography variant="body2" color="text.secondary">
                     จัดการ Tags และ Projects
                 </Typography>
-                <Stack direction="row" spacing={2}>
-                    <Button 
-                        variant="outlined" 
-                        color="inherit" 
-                        startIcon={<DownloadIcon />}
-                        onClick={handleDownloadCSV}
-                        disabled={lstTags.length === 0}
-                    >
-                        Download CSV
-                    </Button>
-                    <Button variant="contained" color="primary" onClick={handleAddNew}>
-                        ＋ New Tag
-                    </Button>
-                </Stack>
+                <Grid container spacing={2} sx={{ width: 'auto' }}>
+                    <Grid>
+                        <Button 
+                            size='small'
+                            variant="outlined" 
+                            color="inherit" 
+                            startIcon={<DownloadIcon />}    
+                            onClick={handleDownloadCSV}
+                            disabled={lstTags.length === 0}
+                        >
+                            Download CSV
+                        </Button>
+                    </Grid>
+                    <Grid>
+                        <Button size='small' variant="contained" color="primary" onClick={handleAddNew}>
+                            ＋ New Tag
+                        </Button>
+                    </Grid>
+                </Grid>
             </Box>
 
             {isLoading ? (

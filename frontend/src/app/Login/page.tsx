@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Box, 
   Button, 
@@ -16,76 +16,11 @@ import {
   Container
 } from '@mui/material';
 import { Visibility, VisibilityOff, LockOutlined } from '@mui/icons-material';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/providers/AuthContext';
-
-// Import Hook Form และ Zod
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-
-// กำหนด Schema สำหรับการตรวจสอบข้อมูล (Validation)
-const loginSchema = z.object({
-  Username: z.string().min(1, 'กรุณากรอก Username'),
-  Password: z.string().min(1, 'กรุณากรอก Password'),
-  remember: z.boolean().optional(),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { useLogin } from '@/hooks/useLogin';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [sError, setSError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      Username: '',
-      Password: '',
-      remember: false,
-    }
-  });
-
-  const onFormSubmit = async (data: LoginFormData) => {
-    setSError(null);
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Username: data.Username,
-          Password: data.Password,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        // บันทึกข้อมูลผ่าน AuthContext
-        if (result.token) {
-          login(result.user, result.token);
-        }
-        router.push('/dashboard');
-      } else {
-        setSError(result.message || 'Username หรือ Password ไม่ถูกต้อง');
-      }
-    } catch (err) {
-      setSError('ไม่สามารถเชื่อมต่อกับ Server ได้ กรุณาลองใหม่อีกครั้ง');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { form, showPassword, setShowPassword, sError, isLoading, onSubmit } = useLogin();
+  const { register, handleSubmit, formState: { errors } } = form;
 
   return (
     <Box 
@@ -138,7 +73,7 @@ export default function LoginPage() {
           </Box>
 
           <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.5px' }}>
-            Welcome Back
+            Welcome
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
             เข้าสู่ระบบเพื่อจัดการกระแสเงินสดของคุณ
@@ -150,7 +85,7 @@ export default function LoginPage() {
             </Alert>
           )}
 
-          <Box component="form" onSubmit={handleSubmit(onFormSubmit)} sx={{ width: '100%' }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%' }}>
             <TextField
               {...register('Username')}
               margin="normal"
@@ -214,15 +149,6 @@ export default function LoginPage() {
             >
               {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
             </Button>
-            
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                ยังไม่มีบัญชี?{' '}
-                <Typography component="span" variant="body2" color="primary" sx={{ cursor: 'pointer', fontWeight: 600 }}>
-                  ติดต่อผู้ดูแลระบบ
-                </Typography>
-              </Typography>
-            </Box>
           </Box>
         </Paper>
       </Container>

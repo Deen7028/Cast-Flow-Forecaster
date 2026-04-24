@@ -16,14 +16,14 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public IActionResult Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await _authService.LoginAsync(request);
+        var result = _authService.Login(request);
 
         if (result == null)
         {
@@ -34,13 +34,20 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("profile")]
-    public async Task<IActionResult> GetProfile([FromQuery] string username)
+    public IActionResult GetProfile([FromQuery] string username)
     {
-        var user = await _authService.GetUserProfileAsync(username);
+        var user = _authService.GetUserProfile(username);
         if (user == null)
         {
             return NotFound(new { message = "ไม่พบข้อมูลผู้ใช้งาน" });
         }
         return Ok(user);
     }
+
+    [HttpPost]
+    public ActionResult<tmUsers> PostUser(tmUsers user)
+    {
+        var result = _authService.RegisterUser(user);
+        return CreatedAtAction(nameof(GetProfile), new { id = result.nId }, result);
+    } 
 }

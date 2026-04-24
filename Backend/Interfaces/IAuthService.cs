@@ -1,9 +1,11 @@
 using Backend.DTOs.Auth;
+using Backend.Data.Entities;
 
 namespace Backend.Interfaces;
 
 public interface IAuthService
 {
-    Task<AuthResponse?> LoginAsync(LoginRequest request);
-    Task<UserInfoDto?> GetUserProfileAsync(string username);
+    AuthResponse? Login(LoginRequest request);
+    UserInfoDto? GetUserProfile(string username);
+    tmUsers RegisterUser(tmUsers user);
 }

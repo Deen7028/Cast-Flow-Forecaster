@@ -96,5 +96,16 @@ namespace Backend.Services
             _objContext.SaveChanges();
             return new { status = "success", message = "บันทึกธุรกรรมเรียบร้อย" };
         }
+
+        public object DeleteTransaction(int nId)
+        {
+            var objData = _objContext.tbTransactions.Find(nId);
+            if (objData != null)
+            {
+                _objContext.tbTransactions.Remove(objData);
+                _objContext.SaveChanges();
+            }
+            return new { status = "success" };
+        }
     }
 }

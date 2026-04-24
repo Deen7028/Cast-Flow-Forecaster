@@ -17,10 +17,11 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
     }, []);
 
-    const sDrawerWidth = isMobile ? '280px' : '25%';
+    const sDrawerWidth = isMobile ? '250px' : '20%';
 
     const SidebarContent = (
         <Box sx={{ pt: 3, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
@@ -84,7 +85,7 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
             {/* ส่วน Footer (SoftHouse Co.) ด้านล่างสุด */}
             <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', mt: 'auto' }}>
                 <Box sx={{ p: 1.5, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="body2" fontWeight={600}>SoftHouse Co.</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>SoftHouse Co.</Typography>
                     <Typography variant="caption" color="text.secondary">THB ONLY</Typography>
                 </Box>
             </Box>

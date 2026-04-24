@@ -31,5 +31,17 @@ namespace Backend.Controllers
                 return BadRequest(new { status = "error", message = ex.Message });
             }
         }
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                return Ok(_objService.DeleteTransaction(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = "error", message = ex.Message });
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ using Backend.DTOs.Auth;
 using Backend.Interfaces;
 using Backend.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using Backend.Data.Entities;
 
 namespace Backend.Services;
 
@@ -14,16 +15,14 @@ public class AuthService : IAuthService
         _context = context;
     }
 
-    public async Task<AuthResponse?> LoginAsync(LoginRequest request)
+    public AuthResponse? Login(LoginRequest request)
     {
-        // 1. หา User จาก Username
-        var user = await _context.tmUsers
-            .FirstOrDefaultAsync(u => u.sUsername == request.Username && u.isActive == true);
+        
+        var user = _context.tmUsers
+            .FirstOrDefault(u => u.sUsername == request.Username && u.isActive == true);
 
         if (user == null) return null;
 
-        // 2. ตรวจสอบ Password (ในอนาคตควรใช้ BCrypt หรือ Identity PasswordHasher)
-        // สมมติว่าตอนนี้เทียบตรงๆ หรือคุณอาจจะมี Logic การ Hash อยู่แล้ว
         if (user.sPasswordHash != request.Password) 
         {
             return null;
@@ -41,5 +40,42 @@ public class AuthService : IAuthService
                 Role = user.sRole
             }
         };
+    }
+
+    public UserInfoDto? GetUserProfile(string username)
+    {
+        var user = _context.tmUsers
+            .FirstOrDefault(u => u.sUsername == username && u.isActive == true);
+
+        if (user == null) return null;
+
+        return new UserInfoDto
+        {
+            Id = user.nId,
+            Username = user.sUsername,
+            FullName = user.sFullName ?? "",
+            Role = user.sRole
+        };
+    }
+
+    public tmUsers RegisterUser(tmUsers user)
+    {
+        var objUser = _context.tmUsers.FirstOrDefault(w => w.nId == user.nId);
+        if (objUser == null)
+        {
+            objUser = new tmUsers();
+            _context.tmUsers.Add(objUser);
+        }
+
+        objUser.sUsername = user.sUsername;
+        objUser.sPasswordHash = user.sPasswordHash;
+        objUser.sFullName = user.sFullName;
+        objUser.sEmail = user.sEmail;
+        objUser.sRole = user.sRole;
+        objUser.isActive = user.isActive;
+        objUser.dCreatedAt = user.dCreatedAt;
+
+        _context.SaveChanges();
+        return objUser;
     }
 }

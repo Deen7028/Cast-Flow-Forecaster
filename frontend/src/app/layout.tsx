@@ -5,12 +5,17 @@ import { Sidebar, Topbar } from '@/components/layout';
 import { Box } from '@mui/material';
 import './globals.css';
 
+import { usePathname } from 'next/navigation';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleSidebarToggle = () => {
     setIsMobileOpen(!isMobileOpen);
   };
+
+  const isLoginPage = pathname === '/Login';
 
   return (
     <html lang="th" suppressHydrationWarning>
@@ -20,15 +25,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
           <ThemeRegistry>
             <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
-              {/* 1. Sidebar ด้านซ้าย */}
-              <Sidebar isMobileOpen={isMobileOpen} onMobileClose={() => setIsMobileOpen(false)} />
+              {!isLoginPage && (
+                <Sidebar isMobileOpen={isMobileOpen} onMobileClose={() => setIsMobileOpen(false)} />
+              )}
 
-              {/* 2. พื้นที่ด้านขวา (Topbar + Content) */}
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <Topbar onOpenSidebar={handleSidebarToggle} />
+                {!isLoginPage && (
+                  <Topbar onOpenSidebar={handleSidebarToggle} />
+                )}
 
-                {/* 3. Main Content Area */}
-                <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+                <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: isLoginPage ? 0 : 3 }}>
                   {children}
                 </Box>
               </Box>

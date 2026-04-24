@@ -42,4 +42,20 @@ public class AuthService : IAuthService
             }
         };
     }
+
+    public async Task<UserInfoDto?> GetUserProfileAsync(string username)
+    {
+        var user = await _context.tmUsers
+            .FirstOrDefaultAsync(u => u.sUsername == username && u.isActive == true);
+
+        if (user == null) return null;
+
+        return new UserInfoDto
+        {
+            Id = user.nId,
+            Username = user.sUsername,
+            FullName = user.sFullName ?? "",
+            Role = user.sRole
+        };
+    }
 }

@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import ThemeRegistry from '@/components/providers/ThemeRegistry';
+import { AuthProvider } from '@/components/providers/AuthContext';
 import { Sidebar, Topbar } from '@/components/layout';
 import { Box } from '@mui/material';
 import './globals.css';
@@ -15,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     setIsMobileOpen(!isMobileOpen);
   };
 
-  const isLoginPage = pathname === '/Login';
+  const isLoginPage = pathname === '/Login' || pathname === '/';
 
   return (
     <html lang="th" suppressHydrationWarning>
@@ -24,21 +25,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
           <ThemeRegistry>
-            <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
-              {!isLoginPage && (
-                <Sidebar isMobileOpen={isMobileOpen} onMobileClose={() => setIsMobileOpen(false)} />
-              )}
-
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+            <AuthProvider>
+              <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', bgcolor: 'background.default' }}>
                 {!isLoginPage && (
-                  <Topbar onOpenSidebar={handleSidebarToggle} />
+                  <Sidebar isMobileOpen={isMobileOpen} onMobileClose={() => setIsMobileOpen(false)} />
                 )}
 
-                <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: isLoginPage ? 0 : 3 }}>
-                  {children}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  {!isLoginPage && (
+                    <Topbar onOpenSidebar={handleSidebarToggle} />
+                  )}
+
+                  <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: isLoginPage ? 0 : 3 }}>
+                    {children}
+                  </Box>
                 </Box>
               </Box>
-            </Box>
+            </AuthProvider>
           </ThemeRegistry>
       </body>
     </html>

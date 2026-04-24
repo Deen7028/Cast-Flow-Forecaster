@@ -32,4 +32,15 @@ public class AuthController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetProfile([FromQuery] string username)
+    {
+        var user = await _authService.GetUserProfileAsync(username);
+        if (user == null)
+        {
+            return NotFound(new { message = "ไม่พบข้อมูลผู้ใช้งาน" });
+        }
+        return Ok(user);
+    }
 }

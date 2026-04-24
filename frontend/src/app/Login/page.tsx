@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff, LockOutlined } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthContext';
 
 // Import Hook Form และ Zod
 import { useForm } from 'react-hook-form';
@@ -34,11 +35,11 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [sError, setSError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ตั้งค่า React Hook Form
   const {
     register,
     handleSubmit,
@@ -71,12 +72,11 @@ export default function LoginPage() {
       const result = await response.json();
 
       if (response.ok) {
-        // บันทึก Token และข้อมูลผู้ใช้
+        // บันทึกข้อมูลผ่าน AuthContext
         if (result.token) {
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('user', JSON.stringify(result.user));
+          login(result.user, result.token);
         }
-        router.push('/Dashboard');
+        router.push('/dashboard');
       } else {
         setSError(result.message || 'Username หรือ Password ไม่ถูกต้อง');
       }

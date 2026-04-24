@@ -1,10 +1,10 @@
-using Backend.Models;
+using Backend.DTOs.Tags;
 
 namespace Backend.Interfaces
 {
     public interface ITagService
     {
-        object GetTagsSummaryAsync();
-        object SaveTagAsync(TagInputDto req);
+        object GetTagsSummary();
+        object SaveTag(TagInputDto req);
     }
 }

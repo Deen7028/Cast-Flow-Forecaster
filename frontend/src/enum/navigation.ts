@@ -1,6 +1,6 @@
 import { INavigationItem } from '@/interfaces';
 export const lstNavItems: INavigationItem[] = [
-    { sLabel: 'Dashboard', sRoute: '/', sIcon: '📊', sGroup: 'Overview' },
+    { sLabel: 'Dashboard', sRoute: '/dashboard', sIcon: '📊', sGroup: 'Overview' },
     { sLabel: 'Scenarios', sRoute: '/scenarios', sIcon: '🔮', sGroup: 'Overview' },
     { sLabel: 'All Transactions', sRoute: '/transactions', sIcon: '↕️', sGroup: 'Transactions' },
     { sLabel: 'Recurring Rules', sRoute: '/recurring', sIcon: '🔄', sGroup: 'Transactions' },

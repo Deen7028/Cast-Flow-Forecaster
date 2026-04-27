@@ -6,6 +6,6 @@ namespace Backend.Interfaces
     {
         object GetTransactions();
         object SaveTransaction(TransactionInputDto req);
-        object DeleteTransaction(int nId);
+        object DeleteTransaction(int nTransactionsId);
     }
 }

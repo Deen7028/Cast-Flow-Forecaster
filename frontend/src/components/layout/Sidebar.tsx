@@ -16,10 +16,11 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const sPathname = usePathname();
     const objRouter = useRouter();
-    const { user, isLoading, logout } = useAuth();
+    const { user, logout } = useAuth();
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
     }, []);
 

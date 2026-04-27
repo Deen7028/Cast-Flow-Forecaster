@@ -1,7 +1,7 @@
 using Backend.DTOs.Auth;
 using Backend.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Backend.Data.Entities;
+using global::Data.Entities;
 
 namespace Backend.Controllers;
 
@@ -49,6 +49,6 @@ public class AuthController : ControllerBase
     public ActionResult<tmUsers> PostUser(tmUsers user)
     {
         var result = _authService.RegisterUser(user);
-        return CreatedAtAction(nameof(GetProfile), new { id = result.nId }, result);
+        return CreatedAtAction(nameof(GetProfile), new { id = result.nUsersId }, result);
     } 
 }

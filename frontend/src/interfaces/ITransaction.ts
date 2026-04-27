@@ -1,5 +1,5 @@
 export interface ITransaction {
-    nId: number;
+    nTransactionsId: number;
     sDescription: string;
     nAmount: number;
     sType: string;
@@ -7,16 +7,17 @@ export interface ITransaction {
     sStatus?: string;
     nCategoryId?: number;
     sCategoryName?: string;
-    nTagId: number;
+    nTagsId: number;
     sTagName?: string;
     sTagColor?: string;
 }
 
 export interface ITransactionForm {
-    nId: number;
+    nTransactionsId: number;
     sDescription: string;
     nAmount: number;
     sType: string;
     dDate: string;
-    nTagId: number | null;
+    nTagsId: number | null;
+    sStatus: string;
 }

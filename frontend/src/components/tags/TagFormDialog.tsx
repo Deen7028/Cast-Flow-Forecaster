@@ -16,7 +16,7 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
 
     const { control, handleSubmit, reset } = useForm<ITag>({
         defaultValues: {
-            nId: 0,
+            nTagsId: 0,
             sName: '',
             sColorCode: '#00e5a0',
             isActive: true
@@ -28,14 +28,14 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
         if (isOpen) {
             if (objEditData) {
                 reset({
-                    nId: objEditData.nId,
+                    nTagsId: objEditData.nTagsId,
                     sName: objEditData.sName || '',
                     sColorCode: objEditData.sColorCode || '#00e5a0',
                     isActive: objEditData.isActive ?? true
                 });
             } else {
                 reset({
-                    nId: 0,
+                    nTagsId: 0,
                     sName: '',
                     sColorCode: '#00e5a0',
                     isActive: true

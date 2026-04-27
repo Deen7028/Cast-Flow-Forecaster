@@ -1,6 +1,6 @@
 using Backend.Interfaces;
 using Backend.Services;
-using Backend.Data.Context;
+using global::Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 

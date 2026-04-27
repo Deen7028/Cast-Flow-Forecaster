@@ -1,8 +1,8 @@
 using Backend.Interfaces;
-using Backend.Data.Context;
+using global::Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Backend.DTOs.Tags;
-using Backend.Data.Entities;
+using global::Data.Entities;
 
 namespace Backend.Services
 {
@@ -20,25 +20,25 @@ namespace Backend.Services
             var lstTags = _objContext.tmTags
                 .Select(t => new
                 {
-                    nId = t.nId,
+                    nTagsId = t.nTagsId,
                     sName = t.sName,
                     sColorCode = t.sColorCode,
                     isActive = t.isActive ?? false,
 
-                    nTotalIncome = t.nTransaction
+                    nTotalIncome = t.nTransactionTags
                         .Where(tx => (tx.sType == "INCOME" || tx.sType == "Income") && (tx.sStatus == "Confirmed" || tx.sStatus == "Completed"))
                         .Sum(tx => (decimal?)tx.nAmount) ?? 0,
 
-                    nTotalExpense = t.nTransaction
+                    nTotalExpense = t.nTransactionTags
                         .Where(tx => (tx.sType == "EXPENSE" || tx.sType == "Expense") && (tx.sStatus == "Confirmed" || tx.sStatus == "Completed"))
                         .Sum(tx => (decimal?)tx.nAmount) ?? 0,
 
-                    nTransactionCount = t.nTransaction.Count()
+                    nTransactionCount = t.nTransactionTags.Count()
                 })
                 .ToList()
                 .Select(t => new
                 {
-                    t.nId,
+                    t.nTagsId,
                     t.sName,
                     t.sColorCode,
                     t.isActive,
@@ -54,7 +54,7 @@ namespace Backend.Services
 
         public object SaveTag(TagInputDto req)
         {
-            if (req.nId == 0)
+            if (req.nTagsId == 0)
             {
 
                 var newTag = new tmTags
@@ -68,7 +68,7 @@ namespace Backend.Services
             else
             {
                 // เคสแก้ไข (Update)
-                var existingTag = _objContext.tmTags.Find(req.nId);
+                var existingTag = _objContext.tmTags.Find(req.nTagsId);
                 if (existingTag == null) throw new Exception("ไม่พบข้อมูล Tag ที่ต้องการแก้ไข");
 
                 existingTag.sName = req.sName;

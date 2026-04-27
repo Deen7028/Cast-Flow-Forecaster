@@ -8,7 +8,7 @@ public class AuthResponse
 
 public class UserInfoDto
 {
-    public int Id { get; set; }
+    public int nUsersId { get; set; }
     public string Username { get; set; } = null!;
     public string FullName { get; set; } = string.Empty;
     public string Role { get; set; } = null!;

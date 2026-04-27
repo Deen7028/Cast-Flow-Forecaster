@@ -6,7 +6,6 @@ import {
     Checkbox, Chip, IconButton, Pagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DownloadIcon from '@mui/icons-material/Download';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -18,7 +17,7 @@ import { LogoLoader } from '../common/LogoLoader';
 import { ITransaction } from '@/interfaces';
 
 interface ITransactionDisplay {
-    nId: number;
+    nTransactionsId: number;
     sTitleMain: string;
     sCategory: string;
     sCatColor: string;
@@ -65,7 +64,7 @@ export const TransactionsContainer = () => {
                     const sTypeUpper = item.sType ? item.sType.toUpperCase() : '';
                     const isIncome = sTypeUpper === 'INCOME';
                     return {
-                        nId: item.nId,
+                        nTransactionsId: item.nTransactionsId,
                         sTitleMain: item.sDescription,
                         sCategory: item.sCategoryName || (isIncome ? "Revenue" : "Expense"),
                         sCatColor: isIncome ? "#00e5a0" : "#ff4d6d",
@@ -169,18 +168,18 @@ export const TransactionsContainer = () => {
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            setLstSelectedIds(lstFilteredTransactions.map(n => n.nId));
+            setLstSelectedIds(lstFilteredTransactions.map(n => n.nTransactionsId));
         } else {
             setLstSelectedIds([]);
         }
     };
 
-    const handleRowCheckboxClick = (event: React.ChangeEvent<HTMLInputElement>, nId: number) => {
+    const handleRowCheckboxClick = (event: React.ChangeEvent<HTMLInputElement>, nTransactionsId: number) => {
         event.stopPropagation();
-        const nSelectedIndex = lstSelectedIds.indexOf(nId);
+        const nSelectedIndex = lstSelectedIds.indexOf(nTransactionsId);
         let lstNewSelected: number[] = [];
-        if (nSelectedIndex === -1) lstNewSelected = [...lstSelectedIds, nId];
-        else lstNewSelected = lstSelectedIds.filter(id => id !== nId);
+        if (nSelectedIndex === -1) lstNewSelected = [...lstSelectedIds, nTransactionsId];
+        else lstNewSelected = lstSelectedIds.filter(id => id !== nTransactionsId);
         setLstSelectedIds(lstNewSelected);
     };
 
@@ -198,7 +197,7 @@ export const TransactionsContainer = () => {
         if (lstFilteredTransactions.length === 0) return;
         const sHeaders = "ID,Description,Category,Tag,Date,Amount,Status\n";
         const sRows = lstFilteredTransactions.map(t =>
-            `${t.nId},"${t.sTitleMain}",${t.sCategory},${t.sTagName},${t.dDate},${t._raw.nAmount},${t.sStatus}`
+            `${t.nTransactionsId},"${t.sTitleMain}",${t.sCategory},${t.sTagName},${t.dDate},${t._raw.nAmount},${t.sStatus}`
         ).join("\n");
         const blob = new Blob(['\ufeff' + sHeaders + sRows], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -208,8 +207,8 @@ export const TransactionsContainer = () => {
         link.click();
     };
 
-    const handleDelete = async (nId?: number) => {
-        const idsToDelete = nId ? [nId] : lstSelectedIds;
+    const handleDelete = async (nTransactionsId?: number) => {
+        const idsToDelete = nTransactionsId ? [nTransactionsId] : lstSelectedIds;
         if (idsToDelete.length === 0) return;
         if (!confirm(`ยืนยันการลบข้อมูล ${idsToDelete.length} รายการ?`)) return;
 
@@ -338,11 +337,11 @@ export const TransactionsContainer = () => {
                                     <TableRow><TableCell colSpan={8} align="center" sx={{ py: 5, color: 'text.secondary' }}>ไม่พบข้อมูล</TableCell></TableRow>
                                 ) : (
                                     lstPagedTransactions.map((objRow) => {
-                                        const isItemSelected = lstSelectedIds.indexOf(objRow.nId) !== -1;
+                                        const isItemSelected = lstSelectedIds.indexOf(objRow.nTransactionsId) !== -1;
                                         return (
-                                            <TableRow key={objRow.nId} hover selected={isItemSelected} sx={{ cursor: 'pointer' }} onClick={() => handleEdit(objRow)}>
+                                            <TableRow key={objRow.nTransactionsId} hover selected={isItemSelected} sx={{ cursor: 'pointer' }} onClick={() => handleEdit(objRow)}>
                                                 <TableCell padding="checkbox">
-                                                    <Checkbox size="small" checked={isItemSelected} onChange={(e) => handleRowCheckboxClick(e, objRow.nId)} onClick={(e) => e.stopPropagation()} />
+                                                    <Checkbox size="small" checked={isItemSelected} onChange={(e) => handleRowCheckboxClick(e, objRow.nTransactionsId)} onClick={(e) => e.stopPropagation()} />
                                                 </TableCell>
                                                 <TableCell><Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>{objRow.sTitleMain}</Typography></TableCell>
                                                 <TableCell><Chip label={objRow.sCategory} size="small" sx={{ bgcolor: objRow.sCatBg, color: objRow.sCatColor, fontSize: 11, fontWeight: 600, height: 22 }} /></TableCell>
@@ -350,7 +349,7 @@ export const TransactionsContainer = () => {
                                                 <TableCell sx={{ fontFamily: 'monospace', fontSize: 12, color: 'text.secondary' }}>{objRow.dDate}</TableCell>
                                                 <TableCell align="right" sx={{ fontFamily: 'monospace', fontWeight: 600, color: objRow.isIncome ? 'primary.main' : 'error.main' }}>{objRow.sAmount}</TableCell>
                                                 <TableCell><Chip icon={<CircleIcon sx={{ fontSize: 8, color: objRow.sStatusColor }} />} label={objRow.sStatus} size="small" sx={{ bgcolor: 'transparent', border: `1px solid ${objRow.sStatusColor}40`, color: objRow.sStatusColor, fontSize: 11, fontWeight: 600, height: 22 }} /></TableCell>
-                                                <TableCell align="center"><IconButton size="small" sx={{ color: 'text.secondary' }} onClick={(e) => { e.stopPropagation(); handleDelete(objRow.nId); }}><MoreHorizIcon fontSize="small" /></IconButton></TableCell>
+                                                <TableCell align="center"><IconButton size="small" sx={{ color: 'text.secondary' }} onClick={(e) => { e.stopPropagation(); handleDelete(objRow.nTransactionsId); }}><MoreHorizIcon fontSize="small" /></IconButton></TableCell>
                                             </TableRow>
                                         );
                                     })

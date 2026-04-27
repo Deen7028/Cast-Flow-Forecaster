@@ -1,31 +1,32 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { 
-    Dialog, DialogTitle, DialogContent, DialogActions, 
-    Button, TextField, Box, Select, MenuItem, InputLabel, FormControl 
+import {
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    Button, TextField, Box, Select, MenuItem, InputLabel, FormControl
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-import { ITag, ITransactionForm } from '@/interfaces';
+import { ITag, ITransaction, ITransactionForm } from '@/interfaces';
+import { TransactionStatus } from '@/enum';
 
 interface ITransactionFormDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onSaved: () => void;
-    objEditData: ITransactionForm | null; 
+    objEditData: ITransaction | null;
 }
 
 export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITransactionFormDialogProps) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [lstTags, setLstTags] = useState<ITag[]>([]); 
-
+    const [lstTags, setLstTags] = useState<ITag[]>([]);
     const { control, handleSubmit, reset } = useForm<ITransactionForm>({
         defaultValues: {
-            nId: 0,
+            nTransactionsId: 0,
             sDescription: '',
             nAmount: 0,
             sType: 'Expense',
             dDate: new Date().toISOString().split('T')[0],
-            nTagId: null
+            nTagsId: null,
+            sStatus: TransactionStatus.COMPLETED
         }
     });
 
@@ -50,21 +51,23 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
         if (isOpen) {
             if (objEditData) {
                 reset({
-                    nId: objEditData.nId,
+                    nTransactionsId: objEditData.nTransactionsId,
                     sDescription: objEditData.sDescription || '',
                     nAmount: objEditData.nAmount || 0,
                     sType: objEditData.sType || 'Expense',
                     dDate: objEditData.dDate ? objEditData.dDate.split('T')[0] : '',
-                    nTagId: objEditData.nTagId || null
+                    nTagsId: objEditData.nTagsId || null,
+                    sStatus: objEditData.sStatus || TransactionStatus.COMPLETED
                 });
             } else {
                 reset({
-                    nId: 0,
+                    nTransactionsId: 0,
                     sDescription: '',
                     nAmount: 0,
                     sType: 'Expense',
                     dDate: new Date().toISOString().split('T')[0],
-                    nTagId: null
+                    nTagsId: null,
+                    sStatus: TransactionStatus.COMPLETED
                 });
             }
         }
@@ -101,17 +104,17 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
             </DialogTitle>
             <DialogContent dividers sx={{ borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
-                    
+
                     <Controller
                         name="sDescription"
                         control={control}
                         rules={{ required: true }}
                         render={({ field }) => (
-                            <TextField 
+                            <TextField
                                 {...field}
-                                label="Description" 
-                                variant="outlined" 
-                                fullWidth 
+                                label="Description"
+                                variant="outlined"
+                                fullWidth
                                 placeholder="e.g. ค่าเช่าออฟฟิศ"
                             />
                         )}
@@ -123,12 +126,12 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                             control={control}
                             rules={{ required: true, min: 0 }}
                             render={({ field }) => (
-                                <TextField 
+                                <TextField
                                     {...field}
-                                    label="Amount (THB)" 
+                                    label="Amount (THB)"
                                     type="number"
-                                    variant="outlined" 
-                                    fullWidth 
+                                    variant="outlined"
+                                    fullWidth
                                     onChange={(e) => field.onChange(Number(e.target.value))}
                                 />
                             )}
@@ -156,12 +159,12 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                             name="dDate"
                             control={control}
                             render={({ field }) => (
-                                <TextField 
+                                <TextField
                                     {...field}
-                                    label="Date" 
+                                    label="Date"
                                     type="date"
-                                    variant="outlined" 
-                                    fullWidth 
+                                    variant="outlined"
+                                    fullWidth
                                     slotProps={{ inputLabel: { shrink: true } }}
                                 />
                             )}
@@ -169,7 +172,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                         <FormControl fullWidth>
                             <InputLabel>Category / Tag</InputLabel>
                             <Controller
-                                name="nTagId"
+                                name="nTagsId"
                                 control={control}
                                 render={({ field }) => (
                                     <Select
@@ -179,7 +182,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                                         onChange={(e) => field.onChange(e.target.value)}
                                     >
                                         {lstTags.map((tag) => (
-                                            <MenuItem key={tag.nId} value={tag.nId}>
+                                            <MenuItem key={tag.nTagsId} value={tag.nTagsId}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: tag.sColorCode }} />
                                                     {tag.sName}
@@ -191,7 +194,35 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                             />
                         </FormControl>
                     </Box>
-
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <FormControl fullWidth>
+                            <InputLabel>Status</InputLabel>
+                            <Controller
+                                name="sStatus"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        {...field}
+                                        label="Status"
+                                    >
+                                        {Object.values(TransactionStatus).map((status) => (
+                                            <MenuItem key={status} value={status}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box sx={{
+                                                        width: 10,
+                                                        height: 10,
+                                                        borderRadius: '50%',
+                                                        bgcolor: status === TransactionStatus.COMPLETED ? '#00e5a0' : status === TransactionStatus.PENDING ? '#ffcc00' : '#ff4d6d'
+                                                    }} />
+                                                    {status}
+                                                </Box>
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                )}
+                            />
+                        </FormControl>
+                    </Box>
                 </Box>
             </DialogContent>
             <DialogActions sx={{ p: 2, borderColor: 'divider' }}>

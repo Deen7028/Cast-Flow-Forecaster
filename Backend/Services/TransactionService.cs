@@ -1,8 +1,8 @@
 using Backend.Interfaces;
 using Backend.DTOs.Transaction;
-using Backend.Data.Context;
+using global::Data.Context;
 using Microsoft.EntityFrameworkCore;
-using Backend.Data.Entities;
+using global::Data.Entities;
 
 namespace Backend.Services
 {
@@ -20,9 +20,10 @@ namespace Backend.Services
             var lstData = _objContext.tbTransactions
                 .Include(x => x.nTag)
                 .Include(x => x.nCategory)
+                .Where(x => x.isActive == true)
                 .Select(t => new
                 {
-                    nId = t.nId,
+                    nTransactionsId = t.nTransactionsId,
                     sDescription = t.sDescription,
                     nAmount = t.nAmount,
                     sType = t.sType,
@@ -31,13 +32,13 @@ namespace Backend.Services
                     sCategoryName = t.nCategory.sName,
                     sStatus = t.sStatus,
                     // ดึงข้อมูล Tag แรกเพื่อความเข้ากันได้กับ Frontend เดิม
-                    nTagId = t.nTag.OrderBy(x => x.nId).Select(x => x.nId).FirstOrDefault(),
-                    sTagName = t.nTag.OrderBy(x => x.nId).Select(x => x.sName).FirstOrDefault(),
-                    sTagColor = t.nTag.OrderBy(x => x.nId).Select(x => x.sColorCode).FirstOrDefault(),
+                    nTagsId = t.nTag.OrderBy(x => x.nTagsId).Select(x => x.nTagsId).FirstOrDefault(),
+                    sTagName = t.nTag.OrderBy(x => x.nTagsId).Select(x => x.sName).FirstOrDefault(),
+                    sTagColor = t.nTag.OrderBy(x => x.nTagsId).Select(x => x.sColorCode).FirstOrDefault(),
                     // และส่งรายการทั้งหมดไปด้วย
                     lstTags = t.nTag.Select(x => new
                     {
-                        nId = x.nId,
+                        nTagsId = x.nTagsId,
                         sName = x.sName,
                         sColorCode = x.sColorCode
                     }).ToList()
@@ -50,7 +51,7 @@ namespace Backend.Services
 
         public object SaveTransaction(TransactionInputDto req)
         {
-            if (req.nId == 0)
+            if (req.nTransactionsId == 0)
             {
                 var objNew = new tbTransactions
                 {
@@ -59,7 +60,7 @@ namespace Backend.Services
                     sType = req.sType,
                     dTransactionDate = req.dDate,
                     nCategoryId = 1,
-                    sStatus = "Completed"
+                    sStatus = req.sStatus
                 };
 
                 if (req.nTagId > 0)
@@ -75,7 +76,7 @@ namespace Backend.Services
                 // เคสแก้ไข
                 var objEdit = _objContext.tbTransactions
                     .Include(x => x.nTag)
-                    .FirstOrDefault(x => x.nId == req.nId);
+                    .FirstOrDefault(x => x.nTransactionsId == req.nTransactionsId);
 
                 if (objEdit == null) throw new Exception("ไม่พบรายการ");
 
@@ -83,6 +84,7 @@ namespace Backend.Services
                 objEdit.nAmount = req.nAmount;
                 objEdit.sType = req.sType;
                 objEdit.dTransactionDate = req.dDate;
+                objEdit.sStatus = req.sStatus;
 
                 // อัปเดต Tag
                 objEdit.nTag.Clear();
@@ -97,15 +99,15 @@ namespace Backend.Services
             return new { status = "success", message = "บันทึกธุรกรรมเรียบร้อย" };
         }
 
-        public object DeleteTransaction(int nId)
+        public object DeleteTransaction(int nTransactionsId)
         {
-            var objData = _objContext.tbTransactions.Find(nId);
+            var objData = _objContext.tbTransactions.Find(nTransactionsId);
             if (objData != null)
             {
-                _objContext.tbTransactions.Remove(objData);
+                objData.isActive = false;
                 _objContext.SaveChanges();
             }
-            return new { status = "success" };
+            return new { status = "success",message = "ลบรายการเรียบร้อย" };
         }
     }
 }

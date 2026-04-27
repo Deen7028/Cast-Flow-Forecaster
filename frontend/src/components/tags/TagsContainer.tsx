@@ -56,7 +56,7 @@ export const TagsContainer = () => {
         
         // แปลงข้อมูลเป็นแถวของ CSV
         const arrRows = lstTags.map(objTag => [
-            objTag.nId,
+            objTag.nTagsId,
             `"${objTag.sName}"`, // ใส่ "" เพื่อกัน comma ในชื่อ
             objTag.sColorCode,
             objTag.isActive ? 'Active' : 'Hidden',
@@ -127,7 +127,7 @@ export const TagsContainer = () => {
                     gap: 2
                 }}>
                     {lstTags.map((objTag) => (
-                        <TagCard key={objTag.nId} objTag={objTag} onEdit={() => handleEdit(objTag)} />
+                        <TagCard key={objTag.nTagsId} objTag={objTag} onEdit={() => handleEdit(objTag)} />
                     ))}
                 </Box>
             )}

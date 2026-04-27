@@ -1,7 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery, useTheme, Badge, IconButton } from '@mui/material';
-import { Logout } from '@mui/icons-material';
+import React from 'react';
+import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Badge } from '@mui/material';
 import { usePathname, useRouter } from 'next/navigation';
 import { lstNavItems } from '@/enum';
 import { useAuth } from '@/components/providers/AuthContext';
@@ -11,24 +10,14 @@ interface ISidebarProps {
     onMobileClose: () => void;
 }
 
-export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+export const Sidebar = () => {
     const sPathname = usePathname();
     const objRouter = useRouter();
-    const { user, isLoading, logout } = useAuth();
-    const [isMounted, setIsMounted] = useState(false);
 
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    const sDrawerWidth = isMobile ? '280px' : '25%';
-
-    const SidebarContent = (
-        <Box sx={{ pt: 3, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
-            <Box sx={{ px: 3, pb: 3 }}>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main', fontFamily: 'Syne' }}>
+    return (
+        <Box sx={{ width: 228, bgcolor: 'background.paper', borderRight: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', height: '100vh' }}>
+            <Box sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 800, fontFamily: 'Syne' }}>
                     Cash<Box component="span" sx={{ color: 'text.primary', fontStyle: 'italic' }}>Flow</Box>
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.disabled', fontFamily: 'monospace', letterSpacing: 1 }}>
@@ -36,16 +25,13 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
                 </Typography>
             </Box>
 
-            <List sx={{ flex: 1, overflowY: 'auto', px: 1 }}>
-                {lstNavItems.map((objItem) => {
-                    const isSelected = sPathname === objItem.sRoute;
-                    return (
+            <Box sx={{ flex: 1, overflowY: 'auto', p: 1 }}>
+                <List>
+                    {lstNavItems.map((objItem) => (
                         <ListItem key={objItem.sRoute} disablePadding sx={{ mb: 0.5 }}>
                             <ListItemButton
-                                onClick={() => {
-                                    objRouter.push(objItem.sRoute);
-                                    if (isMobile) onMobileClose();
-                                }}
+                                onClick={() => objRouter.push(objItem.sRoute)}
+                                selected={sPathname === objItem.sRoute}
                                 sx={{
                                     borderRadius: 1.5,
                                     bgcolor: isSelected ? 'rgba(0, 229, 160, 0.08)' : 'transparent',
@@ -53,94 +39,23 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
                                     '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.05)' }
                                 }}
                             >
-                                <ListItemIcon sx={{ color: isSelected ? 'primary.main' : 'inherit', minWidth: 40, fontSize: 20 }}>
-                                    {objItem.sIcon}
-                                </ListItemIcon>
-
-                                <ListItemText
-                                    disableTypography
-                                    primary={
-                                        <Typography
-                                            sx={{
-                                                fontSize: 13,
-                                                fontWeight: isSelected ? 700 : 500,
-                                                color: 'inherit'
-                                            }}
-                                        >
-                                            {objItem.sLabel}
-                                        </Typography>
-                                    }
-                                />
-
+                                <ListItemIcon sx={{ minWidth: 32, fontSize: 16 }}>{objItem.sIcon}</ListItemIcon>
+                                <ListItemText primary={objItem.sLabel} primaryTypographyProps={{ fontSize: 13, fontWeight: 500 }} />
                                 {objItem.nBadgeCount && (
                                     <Badge badgeContent={objItem.nBadgeCount} color="error" sx={{ mr: 1 }} />
                                 )}
                             </ListItemButton>
                         </ListItem>
-                    );
-                })}
-            </List>
-
-            <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', mt: 'auto' }}>
-                {user && (
-                    <Box sx={{ mb: 2, p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(255, 255, 255, 0.03)', borderRadius: 2 }}>
-                        <Box sx={{ 
-                            width: 32, height: 32, borderRadius: '50%', 
-                            bgcolor: 'primary.main', display: 'flex', 
-                            alignItems: 'center', justifyContent: 'center', 
-                            color: 'white', fontWeight: 'bold', fontSize: 14
-                        }}>
-                            {(user.fullName || user.username || 'U').charAt(0).toUpperCase()}
-                        </Box>
-                        <Box sx={{ overflow: 'hidden', flexGrow: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user.fullName || user.username || 'User'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                กำลังใช้งานอยู่
-                            </Typography>
-                        </Box>
-                        <IconButton onClick={logout} size="small" color="error" title="ออกจากระบบ" sx={{ bgcolor: 'rgba(211, 47, 47, 0.08)', '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' } }}>
-                            <Logout fontSize="small" />
-                        </IconButton>
-                        </Box>
-                )}
+                    ))}
+                </List>
             </Box>
-        </Box>
-    );
 
-    if (!isMounted) return null;
-
-    return (
-        <Box component="nav" sx={{ width: { md: sDrawerWidth }, flexShrink: { md: 0 } }}>
-            <Drawer
-                variant="temporary"
-                open={isMobileOpen}
-                onClose={onMobileClose}
-                ModalProps={{ keepMounted: true }}
-                sx={{
-                    display: { xs: 'block', md: 'none' },
-                    '& .MuiDrawer-paper': { boxSizing: 'border-box', width: sDrawerWidth, borderRight: 'none' },
-                }}
-            >
-                {SidebarContent}
-            </Drawer>
-
-            <Drawer
-                variant="permanent"
-                sx={{
-                    display: { xs: 'none', md: 'block' },
-                    '& .MuiDrawer-paper': {
-                        boxSizing: 'border-box',
-                        width: sDrawerWidth,
-                        borderRight: '1px solid',
-                        borderColor: 'divider'
-                    },
-                }}
-                open
-            >
-                {SidebarContent}
-            </Drawer>
+            <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ p: 1.5, bgcolor: 'background.default', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="body2" fontWeight={600}>SoftHouse Co.</Typography>
+                    <Typography variant="caption" color="text.secondary">THB ONLY</Typography>
+                </Box>
+            </Box>
         </Box>
     );
 };

@@ -15,10 +15,12 @@ export const darkTheme = createTheme({
       main: '#3d9eff',   
     },
     error: {
-      main: '#ff4d6d',    
+      main: '#ff0000ff', 
+      light: 'rgba(255, 0, 0, 0.08)',
     },
     warning: {
-      main: '#f5c542',    
+      main: '#f5c542',
+      light: 'rgba(245, 197, 66, 0.08)',    
     },
     info: {
       main: '#a78bfa',    

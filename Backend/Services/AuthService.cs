@@ -9,25 +9,21 @@ namespace Backend.Services;
 public class AuthService : IAuthService
 {
     private readonly WebAppDbContext _context;
-
     public AuthService(WebAppDbContext context)
     {
         _context = context;
     }
-
     public AuthResponse? Login(LoginRequest request)
     {
-        
         var user = _context.tbUsers
             .FirstOrDefault(u => u.sUsername == request.Username && u.isActive == true);
-
+            
         if (user == null) return null;
 
         if (user.sPasswordHash != request.Password) 
         {
             return null;
         }
-
         // 3. ถ้าผ่าน ให้สร้าง Response (ในอนาคตจะรวมการสร้าง JWT Token ที่นี่)
         return new AuthResponse
         {
@@ -41,14 +37,11 @@ public class AuthService : IAuthService
             }
         };
     }
-
     public UserInfoDto? GetUserProfile(string username)
     {
         var user = _context.tbUsers
             .FirstOrDefault(u => u.sUsername == username && u.isActive == true);
-
         if (user == null) return null;
-
         return new UserInfoDto
         {
             nUsersId = user.nUsersId,
@@ -57,7 +50,6 @@ public class AuthService : IAuthService
             Role = user.sRole
         };
     }
-
     public tbUsers RegisterUser(tbUsers user)
     {
         var objUser = _context.tbUsers.FirstOrDefault(w => w.nUsersId == user.nUsersId);

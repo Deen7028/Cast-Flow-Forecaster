@@ -5,9 +5,11 @@ namespace Backend.DTOs.Transaction
         public int nTransactionsId { get; set; }
         public string sDescription { get; set; } = string.Empty;
         public decimal nAmount { get; set; }
-        public string sType { get; set; } = "Expense";
+        public required string sType { get; set; }
         public DateTime dDate { get; set; }
         public int nTagId { get; set; }
-        public string sStatus { get; set; } = "Completed";
+        public int nCategoryId { get; set; }
+        public required string sStatus { get; set; }
+        public int nRecurringRuleId { get; set; }
     }
 }

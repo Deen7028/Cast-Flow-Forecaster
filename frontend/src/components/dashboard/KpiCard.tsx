@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { Paper, Typography, Box } from '@mui/material';
+import { Paper, Typography} from '@mui/material';
 import { IKpiCardProps } from '@/interfaces';
 
 export const KpiCard = ({ sTitle, nValue, isPositive }: IKpiCardProps) => {

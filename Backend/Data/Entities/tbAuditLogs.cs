@@ -17,5 +17,5 @@ public partial class tbAuditLogs
 
     public DateTime? dActionDate { get; set; }
 
-    public virtual tmUsers? nUser { get; set; }
+    public virtual tbUsers? nUser { get; set; }
 }

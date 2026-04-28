@@ -3,64 +3,57 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface User {
-    id: number;
-    username: string;
-    fullName: string;
-    role: string;
-}
+import { IUser } from '@/interfaces';
 
-interface AuthContextType {
-    user: User | null;
-    token: string | null;
-    login: (user: User, token: string) => void;
+interface IAuthContextType {
+    objUser: IUser | null;
+    sToken: string | null;
+    login: (objUser: IUser, sToken: string) => void;
     logout: () => void;
     isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    const [objUser, setObjUser] = useState<IUser | null>(() => {
+        if (typeof window !== 'undefined') {
+            const sStoredUser = localStorage.getItem('user');
+            return sStoredUser ? JSON.parse(sStoredUser) : null;
+        }
+        return null;
+    });
+    const [sToken, setSToken] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('token');
+        }
+        return null;
+    });
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
+    const objRouter = useRouter();
 
     useEffect(() => {
-        // ดึงข้อมูลจาก localStorage เมื่อ Component เริ่มต้น
-        const storedUser = localStorage.getItem('user');
-        const storedToken = localStorage.getItem('token');
-
-        if (storedUser && storedToken) {
-            try {
-                setUser(JSON.parse(storedUser));
-                setToken(storedToken);
-            } catch (error) {
-                console.error('Failed to parse user from localStorage', error);
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-            }
-        }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsLoading(false);
     }, []);
 
-    const login = (userData: User, userToken: string) => {
-        setUser(userData);
-        setToken(userToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', userToken);
+    const login = (objUserData: IUser, sUserToken: string) => {
+        setObjUser(objUserData);
+        setSToken(sUserToken);
+        localStorage.setItem('user', JSON.stringify(objUserData));
+        localStorage.setItem('token', sUserToken);
     };
 
     const logout = () => {
-        setUser(null);
-        setToken(null);
+        setObjUser(null);
+        setSToken(null);
         localStorage.removeItem('user');
         localStorage.removeItem('token');
-        router.push('/Login');
+        objRouter.push('/Login');
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ objUser, sToken, login, logout, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

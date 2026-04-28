@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +30,7 @@ public partial class WebAppDbContext : DbContext
 
     public virtual DbSet<tmTags> tmTags { get; set; }
 
-    public virtual DbSet<tmUsers> tmUsers { get; set; }
+    public virtual DbSet<tbUsers> tbUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,7 +71,7 @@ public partial class WebAppDbContext : DbContext
             entity.HasOne(d => d.nUser).WithMany(p => p.tbAuditLogs)
                 .HasForeignKey(d => d.nUserId)
                 .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("FK_tbAuditLogs_tmUsers");
+                .HasConstraintName("FK_tbAuditLogs_tbUsers");
         });
 
         modelBuilder.Entity<tbRecurringRules>(entity =>
@@ -221,11 +221,12 @@ public partial class WebAppDbContext : DbContext
             entity.Property(e => e.sName).HasMaxLength(100);
         });
 
-        modelBuilder.Entity<tmUsers>(entity =>
+        modelBuilder.Entity<tbUsers>(entity =>
         {
-            entity.HasKey(e => e.nUsersId).HasName("PK__tmUsers__DF98CDDD2EDB2EAD");
+            entity.ToTable("tbUsers");
+            entity.HasKey(e => e.nUsersId).HasName("PK_tbUsers");
 
-            entity.HasIndex(e => e.sUsername, "UQ__tmUsers__3FEB8767C8F9FC5B").IsUnique();
+            entity.HasIndex(e => e.sUsername, "UQ_tbUsers_Username").IsUnique();
 
             entity.Property(e => e.dCreatedAt)
                 .HasDefaultValueSql("(getdate())")

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import {
-  Box, Typography, Paper, Chip, Button, IconButton, Stack
+  Box, Typography, Paper, Chip, Button, IconButton
 } from '@mui/material';
 import { Edit, Pause, Dns } from '@mui/icons-material';
 

@@ -7,5 +7,5 @@ public interface IAuthService
 {
     AuthResponse? Login(LoginRequest request);
     UserInfoDto? GetUserProfile(string username);
-    tmUsers RegisterUser(tmUsers user);
+    tbUsers RegisterUser(tbUsers user);
 }

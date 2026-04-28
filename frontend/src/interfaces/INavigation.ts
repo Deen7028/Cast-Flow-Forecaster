@@ -1,7 +1,9 @@
+import React from 'react';
+
 export interface INavigationItem {
     sLabel: string;
     sRoute: string;
-    sIcon: string;
+    sIcon: React.ReactNode;
     sGroup: 'Overview' | 'Transactions' | 'Analytics' | 'System';
     nBadgeCount?: number;
 }

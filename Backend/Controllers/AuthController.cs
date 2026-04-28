@@ -9,46 +9,46 @@ namespace Backend.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IAuthService _objAuthService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService objAuthService)
     {
-        _authService = authService;
+        _objAuthService = objAuthService;
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public IActionResult Login([FromBody] LoginRequest objRequest)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = _authService.Login(request);
+        var objResult = _objAuthService.Login(objRequest);
 
-        if (result == null)
+        if (objResult == null)
         {
             return Unauthorized(new { message = "Username หรือ Password ไม่ถูกต้อง" });
         }
 
-        return Ok(result);
+        return Ok(objResult);
     }
 
     [HttpGet("profile")]
-    public IActionResult GetProfile([FromQuery] string username)
+    public IActionResult GetProfile([FromQuery] string sUsername)
     {
-        var user = _authService.GetUserProfile(username);
-        if (user == null)
+        var objUser = _objAuthService.GetUserProfile(sUsername);
+        if (objUser == null)
         {
             return NotFound(new { message = "ไม่พบข้อมูลผู้ใช้งาน" });
         }
-        return Ok(user);
+        return Ok(objUser);
     }
 
     [HttpPost]
-    public ActionResult<tmUsers> PostUser(tmUsers user)
+    public ActionResult<tbUsers> PostUser(tbUsers objUser)
     {
-        var result = _authService.RegisterUser(user);
-        return CreatedAtAction(nameof(GetProfile), new { id = result.nUsersId }, result);
+        var objResult = _objAuthService.RegisterUser(objUser);
+        return CreatedAtAction(nameof(GetProfile), new { id = objResult.nUsersId }, objResult);
     } 
 }

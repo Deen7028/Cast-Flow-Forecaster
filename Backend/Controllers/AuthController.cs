@@ -46,7 +46,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<tmUsers> PostUser(tmUsers user)
+    public ActionResult<tbUsers> PostUser(tbUsers user)
     {
         var result = _authService.RegisterUser(user);
         return CreatedAtAction(nameof(GetProfile), new { id = result.nUsersId }, result);

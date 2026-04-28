@@ -18,7 +18,7 @@ public class AuthService : IAuthService
     public AuthResponse? Login(LoginRequest request)
     {
         
-        var user = _context.tmUsers
+        var user = _context.tbUsers
             .FirstOrDefault(u => u.sUsername == request.Username && u.isActive == true);
 
         if (user == null) return null;
@@ -44,7 +44,7 @@ public class AuthService : IAuthService
 
     public UserInfoDto? GetUserProfile(string username)
     {
-        var user = _context.tmUsers
+        var user = _context.tbUsers
             .FirstOrDefault(u => u.sUsername == username && u.isActive == true);
 
         if (user == null) return null;
@@ -58,13 +58,13 @@ public class AuthService : IAuthService
         };
     }
 
-    public tmUsers RegisterUser(tmUsers user)
+    public tbUsers RegisterUser(tbUsers user)
     {
-        var objUser = _context.tmUsers.FirstOrDefault(w => w.nUsersId == user.nUsersId);
+        var objUser = _context.tbUsers.FirstOrDefault(w => w.nUsersId == user.nUsersId);
         if (objUser == null)
         {
-            objUser = new tmUsers();
-            _context.tmUsers.Add(objUser);
+            objUser = new tbUsers();
+            _context.tbUsers.Add(objUser);
         }
 
         objUser.sUsername = user.sUsername;

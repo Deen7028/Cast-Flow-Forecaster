@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Data.Entities;
 
-public partial class tmUsers
+public partial class tbUsers
 {
     public int nUsersId { get; set; }
 

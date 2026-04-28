@@ -30,7 +30,7 @@ public partial class WebAppDbContext : DbContext
 
     public virtual DbSet<tmTags> tmTags { get; set; }
 
-    public virtual DbSet<tmUsers> tmUsers { get; set; }
+    public virtual DbSet<tbUsers> tbUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -221,7 +221,7 @@ public partial class WebAppDbContext : DbContext
             entity.Property(e => e.sName).HasMaxLength(100);
         });
 
-        modelBuilder.Entity<tmUsers>(entity =>
+        modelBuilder.Entity<tbUsers>(entity =>
         {
             entity.HasKey(e => e.nUsersId).HasName("PK__tmUsers__DF98CDDD2EDB2EAD");
 

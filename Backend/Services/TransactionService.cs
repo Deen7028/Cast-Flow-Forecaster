@@ -60,7 +60,8 @@ namespace Backend.Services
                     sType = req.sType,
                     dTransactionDate = req.dDate,
                     nCategoryId = 1,
-                    sStatus = req.sStatus
+                    sStatus = req.sStatus,
+                    isActive = true
                 };
 
                 if (req.nTagId > 0)
@@ -85,6 +86,7 @@ namespace Backend.Services
                 objEdit.sType = req.sType;
                 objEdit.dTransactionDate = req.dDate;
                 objEdit.sStatus = req.sStatus;
+                
 
                 // อัปเดต Tag
                 objEdit.nTag.Clear();

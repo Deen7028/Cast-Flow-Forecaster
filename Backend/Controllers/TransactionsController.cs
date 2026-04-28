@@ -19,28 +19,47 @@ namespace Backend.Controllers
         [HttpGet]
         public IActionResult Get() => Ok(_objService.GetTransactions());
 
-        [HttpPost]
-        public IActionResult Post([FromBody] TransactionInputDto req)
+        [HttpGet("categories")]
+        public IActionResult GetCategories() => Ok(_objService.GetCategories());
+
+        [HttpGet("recurring-rules")]
+        public IActionResult GetRecurringRules() => Ok(_objService.GetRecurringRules());
+
+        [HttpPost("categories")]
+        public IActionResult PostCategory([FromBody] CategoryInputDto objReq)
         {
             try
             {
-                return Ok(_objService.SaveTransaction(req));
+                return Ok(_objService.SaveCategory(objReq));
             }
-            catch (Exception ex)
+            catch (Exception objEx)
             {
-                return BadRequest(new { status = "error", message = ex.Message });
+                return BadRequest(new { status = "error", message = objEx.Message });
             }
         }
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+
+        [HttpPost]
+        public IActionResult Post([FromBody] TransactionInputDto objReq)
         {
             try
             {
-                return Ok(_objService.DeleteTransaction(id));
+                return Ok(_objService.SaveTransaction(objReq));
             }
-            catch (Exception ex)
+            catch (Exception objEx)
             {
-                return BadRequest(new { status = "error", message = ex.Message });
+                return BadRequest(new { status = "error", message = objEx.Message });
+            }
+        }
+        [HttpDelete("{nId}")]
+        public IActionResult Delete(int nId)
+        {
+            try
+            {
+                return Ok(_objService.DeleteTransaction(nId));
+            }
+            catch (Exception objEx)
+            {
+                return BadRequest(new { status = "error", message = objEx.Message });
             }
         }
     }

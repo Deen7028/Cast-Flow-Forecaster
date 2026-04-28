@@ -12,11 +12,11 @@ interface ISidebarProps {
 }
 
 export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const objTheme = useTheme();
+    const isMobile = useMediaQuery(objTheme.breakpoints.down('md'));
     const sPathname = usePathname();
     const objRouter = useRouter();
-    const { user, logout } = useAuth();
+    const { objUser, logout } = useAuth();
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -24,7 +24,7 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
         setIsMounted(true);
     }, []);
 
-    const sDrawerWidth = isMobile ? '280px' : '25%';
+    const sDrawerWidth = isMobile ? '280px' : '20%';
 
     const SidebarContent = (
         <Box sx={{ pt: 3, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
@@ -83,7 +83,7 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
             </List>
 
             <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', mt: 'auto' }}>
-                {user && (
+                {objUser && (
                     <Box sx={{ mb: 2, p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(255, 255, 255, 0.03)', borderRadius: 2 }}>
                         <Box sx={{ 
                             width: 32, height: 32, borderRadius: '50%', 
@@ -91,11 +91,11 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
                             alignItems: 'center', justifyContent: 'center', 
                             color: 'white', fontWeight: 'bold', fontSize: 14
                         }}>
-                            {(user.fullName || user.username || 'U').charAt(0).toUpperCase()}
+                            {(objUser.fullName || objUser.username || 'U').charAt(0).toUpperCase()}
                         </Box>
                         <Box sx={{ overflow: 'hidden', flexGrow: 1 }}>
                             <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user.fullName || user.username || 'User'}
+                                {objUser.fullName || objUser.username || 'User'}
                             </Typography>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                                 กำลังใช้งานอยู่

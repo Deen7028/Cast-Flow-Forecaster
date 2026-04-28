@@ -4,3 +4,4 @@ export * from './IKpiCardProps';
 export * from './ITag';
 export * from './Irecurring';
 export * from './Icategory';
+export * from './IUser';

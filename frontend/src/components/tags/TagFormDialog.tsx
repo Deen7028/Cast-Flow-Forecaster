@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Switch, Box, Grid } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-import { ITag } from '@/interfaces';
+import { ITag, IApiResponse } from '@/interfaces';
+import { tagService } from '@/services/tag.service';
+import { useNotification } from '@/hooks/useNotification';
 
 interface ITagFormDialogProps {
     isOpen: boolean;
@@ -13,6 +15,8 @@ interface ITagFormDialogProps {
 
 export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFormDialogProps) => {
     const [isLoading, setIsLoading] = useState(false);
+
+    const { notify, NotificationComponent } = useNotification();
 
     const { control, handleSubmit, reset } = useForm<ITag>({
         defaultValues: {
@@ -47,21 +51,18 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
     const handleSave = async (data: ITag) => {
         setIsLoading(true);
         try {
-            const objResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL as string }/Tags`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
+            const objResult = await tagService.save(data) as IApiResponse;
 
-            const objResult = await objResponse.json();
             if (objResult.status === 'success') {
                 onSaved();
                 onClose();
             } else {
-                alert('Error: ' + objResult.message);
+                notify(objResult.message || 'Error: บันทึกข้อมูลไม่สำเร็จ', 'error');
             }
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Save failed', error);
+            const errorMessage = error instanceof Error ? error.message : 'บันทึกข้อมูลไม่สำเร็จ';
+            notify(errorMessage, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -76,13 +77,19 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
                         <Controller
                             name="sName"
                             control={control}
-                            rules={{ required: true }}
-                            render={({ field }) => (
+                            rules={{ required: 'กรุณากรอกชื่อ Tag' }}
+                            render={({ field, fieldState }) => (
                                 <TextField 
                                     {...field}
-                                    label="Tag Name" 
+                                    label={
+                                        <span>
+                                            Tag Name <span style={{ color: '#ff4d6d' }}>*</span>
+                                        </span>
+                                    }
                                     variant="outlined" 
                                     fullWidth 
+                                    error={!!fieldState.error}
+                                    helperText={fieldState.error?.message}
                                 />
                             )}
                         />
@@ -148,6 +155,7 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
                     {isLoading ? 'Saving...' : 'Save'}
                 </Button>
             </DialogActions>
+            <NotificationComponent />
         </Dialog>
     );
 };

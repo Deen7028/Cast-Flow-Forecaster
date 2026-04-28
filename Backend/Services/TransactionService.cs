@@ -20,6 +20,7 @@ namespace Backend.Services
             var lstData = _objContext.tbTransactions
                 .Include(x => x.nTag)
                 .Include(x => x.nCategory)
+                .Include(x => x.nRecurringRule)
                 .Where(x => x.isActive == true)
                 .Select(t => new
                 {
@@ -29,8 +30,11 @@ namespace Backend.Services
                     sType = t.sType,
                     dDate = t.dTransactionDate,
                     nCategoryId = t.nCategoryId,
-                    sCategoryName = t.nCategory.sName,
+                    sCategoryName = t.nCategory != null ? t.nCategory.sName : "General",
+                    sCategoryType = t.nCategory != null ? t.nCategory.sType : t.sType,
                     sStatus = t.sStatus,
+                    sRecurringRuleName = t.nRecurringRule != null ? t.nRecurringRule.sName : null,
+                    nRecurringRuleId = t.nRecurringRuleId,
                     // ดึงข้อมูล Tag แรกเพื่อความเข้ากันได้กับ Frontend เดิม
                     nTagsId = t.nTag.OrderBy(x => x.nTagsId).Select(x => x.nTagsId).FirstOrDefault(),
                     sTagName = t.nTag.OrderBy(x => x.nTagsId).Select(x => x.sName).FirstOrDefault(),
@@ -49,6 +53,59 @@ namespace Backend.Services
             return new { status = "success", data = lstData };
         }
 
+        public object GetCategories()
+        {
+            var lstData = _objContext.tmCategories
+                .Where(x => x.isActive == true)
+                .Select(x => new
+                {
+                    nCategoriesId = x.nCategoriesId,
+                    sName = x.sName,
+                    sType = x.sType
+                })
+                .ToList();
+            return new { status = "success", data = lstData };
+        }
+
+        public object GetRecurringRules()
+        {
+            var lstData = _objContext.tbRecurringRules
+                .Where(x => x.isActive == true)
+                .Select(x => new
+                {
+                    nRecurringRulesId = x.nRecurringRulesId,
+                    sName = x.sName,
+                    nAmount = x.nAmount,
+                    sFrequency = x.sFrequency
+                })
+                .ToList();
+            return new { status = "success", data = lstData };
+        }
+
+        public object SaveCategory(CategoryInputDto req)
+        {
+            if (req.nCategoriesId == 0)
+            {
+                var objNew = new tmCategories
+                {
+                    sName = req.sName,
+                    sType = req.sType,
+                    isActive = true
+                };
+                _objContext.tmCategories.Add(objNew);
+            }
+            else
+            {
+                var objEdit = _objContext.tmCategories.Find(req.nCategoriesId);
+                if (objEdit == null) throw new Exception("ไม่พบหมวดหมู่");
+                objEdit.sName = req.sName;
+                objEdit.sType = req.sType;
+                objEdit.isActive = true;
+            }
+            _objContext.SaveChanges();
+            return new { status = "success", message = "บันทึกหมวดหมู่เรียบร้อย" };
+        }
+
         public object SaveTransaction(TransactionInputDto req)
         {
             if (req.nTransactionsId == 0)
@@ -59,9 +116,11 @@ namespace Backend.Services
                     nAmount = req.nAmount,
                     sType = req.sType,
                     dTransactionDate = req.dDate,
-                    nCategoryId = 1,
+                    nCategoryId = req.nCategoryId > 0 ? req.nCategoryId : 1,
                     sStatus = req.sStatus,
-                    isActive = true
+                    isActive = true,
+                    dCreatedAt = DateTime.Now,
+                    nRecurringRuleId = req.nRecurringRuleId > 0 ? req.nRecurringRuleId : null,
                 };
 
                 if (req.nTagId > 0)
@@ -86,7 +145,9 @@ namespace Backend.Services
                 objEdit.sType = req.sType;
                 objEdit.dTransactionDate = req.dDate;
                 objEdit.sStatus = req.sStatus;
-                
+                if (req.nCategoryId > 0) objEdit.nCategoryId = req.nCategoryId;
+                objEdit.isActive = true;
+                objEdit.nRecurringRuleId = req.nRecurringRuleId > 0 ? req.nRecurringRuleId : null;
 
                 // อัปเดต Tag
                 objEdit.nTag.Clear();
@@ -109,7 +170,7 @@ namespace Backend.Services
                 objData.isActive = false;
                 _objContext.SaveChanges();
             }
-            return new { status = "success",message = "ลบรายการเรียบร้อย" };
+            return new { status = "success", message = "ลบรายการเรียบร้อย" };
         }
     }
 }

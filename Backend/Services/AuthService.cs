@@ -15,27 +15,44 @@ public class AuthService : IAuthService
     }
     public AuthResponse? Login(LoginRequest request)
     {
-        var user = _context.tbUsers
-            .FirstOrDefault(u => u.sUsername == request.Username && u.isActive == true);
-            
-        if (user == null) return null;
+        try
+        {
+            var user = _context.tbUsers
+                .FirstOrDefault(u => u.sUsername == request.Username && u.isActive == true);
 
-        if (user.sPasswordHash != request.Password) 
-        {
-            return null;
-        }
-        // 3. ถ้าผ่าน ให้สร้าง Response (ในอนาคตจะรวมการสร้าง JWT Token ที่นี่)
-        return new AuthResponse
-        {
-            Token = "mock-jwt-token-for-now", // TODO: Implement JWT
-            User = new UserInfoDto
+            if (user == null) 
             {
-                nUsersId = user.nUsersId,
-                Username = user.sUsername,
-                FullName = user.sFullName ?? "",
-                Role = user.sRole
+                Console.WriteLine($"Login failed: User {request.Username} not found.");
+                return null;
             }
-        };
+
+            if (user.sPasswordHash != request.Password)
+            {
+                Console.WriteLine($"Login failed: Incorrect password for user {request.Username}.");
+                return null;
+            }
+
+            return new AuthResponse
+            {
+                Token = "mock-jwt-token-for-now",
+                User = new UserInfoDto
+                {
+                    nUsersId = user.nUsersId,
+                    Username = user.sUsername,
+                    FullName = user.sFullName ?? "",
+                    Role = user.sRole
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR in Login: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"INNER ERROR: {ex.InnerException.Message}");
+            }
+            throw; // Re-throw to keep the 500 for now but log the cause
+        }
     }
     public UserInfoDto? GetUserProfile(string username)
     {

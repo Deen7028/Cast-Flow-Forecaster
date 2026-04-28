@@ -4,15 +4,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/components/providers/AuthContext';
 import { loginSchema, LoginFormData } from '@/validations/auth.schema';
+import { authService } from '@/services/auth.service';
+import { IApiResponse, ILoginResponse } from '@/interfaces';
 
 export const useLogin = () => {
-  const router = useRouter();
+  const objRouter = useRouter();
   const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
+  const [isShowPassword, setIsShowPassword] = useState(false);
   const [sError, setSError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<LoginFormData>({
+  const objForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       Username: '',
@@ -21,43 +23,31 @@ export const useLogin = () => {
     }
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (objData: LoginFormData) => {
     setSError(null);
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Username: data.Username,
-          Password: data.Password,
-        }),
-      });
+      const objResult = await authService.login(objData) as IApiResponse<ILoginResponse>;
 
-      const result = await response.json();
-
-      if (response.ok) {
-        if (result.token) {
-          login(result.user, result.token);
-        }
-        router.push('/dashboard');
+      if (objResult.status === 'success' && objResult.data?.token) {
+        login(objResult.data.user, objResult.data.token);
+        objRouter.push('/dashboard');
       } else {
-        setSError(result.message || 'Username หรือ Password ไม่ถูกต้อง');
+        setSError(objResult.message || 'เข้าสู่ระบบไม่สำเร็จ');
       }
-    } catch (err) {
-      setSError('ไม่สามารถเชื่อมต่อกับ Server ได้ กรุณาลองใหม่อีกครั้ง');
+    } catch (objError) {
+      const sErrorMessage = objError instanceof Error ? objError.message : 'ไม่สามารถเชื่อมต่อกับ Server ได้ กรุณาลองใหม่อีกครั้ง';
+      setSError(sErrorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    form,
-    showPassword,
-    setShowPassword,
+    objForm,
+    isShowPassword,
+    setIsShowPassword,
     sError,
     isLoading,
     onSubmit

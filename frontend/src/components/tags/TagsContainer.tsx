@@ -3,9 +3,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Button, Box, Grid } from '@mui/material';
 import { TagCard } from './TagCard';
 import { TagFormDialog } from './TagFormDialog';
-import { ITag } from '@/interfaces';
+import { ITag, IApiResponse } from '@/interfaces';
 import { LogoLoader } from '../common/LogoLoader';
 import DownloadIcon from '@mui/icons-material/Download';
+import { tagService } from '@/services/tag.service';
+import { useNotification } from '@/hooks/useNotification';
+import { exportToCSV } from '@/utils/exportCsv';
 
 export const TagsContainer = () => {
     const [lstTags, setLstTags] = useState<ITag[]>([]);
@@ -14,12 +17,12 @@ export const TagsContainer = () => {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [objSelectedTag, setObjSelectedTag] = useState<ITag | null>(null);
 
+    const { notify, NotificationComponent } = useNotification();
+
     const fetchTags = useCallback(async () => {
         setIsLoading(true);
         try {
-            const objResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Tags`);
-            if (!objResponse.ok) throw new Error('Fetch failed');
-            const objResult = await objResponse.json();
+            const objResult = await tagService.getAll() as IApiResponse<ITag[]>;
             if (objResult.status === 'success') {
                 setLstTags(objResult.data || []);
             }
@@ -47,17 +50,14 @@ export const TagsContainer = () => {
         setIsFormOpen(true);
     };
 
-    // ฟังก์ชันดาวน์โหลด CSV
     const handleDownloadCSV = () => {
         if (lstTags.length === 0) return;
 
-        // กำหนด Header ของ CSV
-        const arrHeaders = ['ID', 'Name', 'Color', 'Is Active', 'Total Income', 'Total Expense', 'Net', 'Transaction Count'];
+        const headers = ['ID', 'Name', 'Color', 'Is Active', 'Total Income', 'Total Expense', 'Net', 'Transaction Count'];
         
-        // แปลงข้อมูลเป็นแถวของ CSV
-        const arrRows = lstTags.map(objTag => [
+        const rows = lstTags.map(objTag => [
             objTag.nTagsId,
-            `"${objTag.sName}"`, // ใส่ "" เพื่อกัน comma ในชื่อ
+            objTag.sName,
             objTag.sColorCode,
             objTag.isActive ? 'Active' : 'Hidden',
             objTag.nTotalIncome,
@@ -66,22 +66,7 @@ export const TagsContainer = () => {
             objTag.nTransactionCount
         ]);
 
-        // รวม Header และ Rows
-        const sCsvContent = [
-            arrHeaders.join(','),
-            ...arrRows.map(row => row.join(','))
-        ].join('\n');
-
-        // สร้าง Blob และดาวน์โหลด
-        const blob = new Blob(['\ufeff' + sCsvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `Tags_Export_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        exportToCSV(`Tags_Export_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
     };
 
     return (
@@ -132,13 +117,17 @@ export const TagsContainer = () => {
                 </Box>
             )}
 
-            {/*  เรียกใช้ Component Form Dialog */}
             <TagFormDialog
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
-                onSaved={fetchTags}
+                onSaved={() => {
+                    notify(objSelectedTag ? 'อัปเดต Tag สำเร็จ' : 'เพิ่ม Tag สำเร็จ');
+                    fetchTags();
+                }}
                 objEditData={objSelectedTag}
             />
+
+            <NotificationComponent />
         </Box>
     );
 };

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tbAuditLogs
 {
-    public long nId { get; set; }
+    public long nAuditLogsId { get; set; }
 
     public int? nUserId { get; set; }
 

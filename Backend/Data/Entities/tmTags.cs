@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tmTags
 {
-    public int nId { get; set; }
+    public int nTagsId { get; set; }
 
     public string sName { get; set; } = null!;
 
@@ -13,5 +13,5 @@ public partial class tmTags
 
     public bool? isActive { get; set; }
 
-    public virtual ICollection<tbTransactions> nTransaction { get; set; } = new List<tbTransactions>();
+    public virtual ICollection<tbTransactions> nTransactionTags { get; set; } = new List<tbTransactions>();
 }

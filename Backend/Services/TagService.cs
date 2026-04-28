@@ -1,8 +1,8 @@
 using Backend.Interfaces;
-using Backend.Data.Context;
+using global::Data.Context;
 using Microsoft.EntityFrameworkCore;
-using Backend.Models;
-using Backend.Data.Entities;
+using Backend.DTOs.Tags;
+using global::Data.Entities;
 
 namespace Backend.Services
 {
@@ -15,41 +15,46 @@ namespace Backend.Services
             _objContext = objContext;
         }
 
-        public object GetTagsSummaryAsync()
+        public object GetTagsSummary()
         {
+            var lstTags = _objContext.tmTags
+                .Select(t => new
+                {
+                    nTagsId = t.nTagsId,
+                    sName = t.sName,
+                    sColorCode = t.sColorCode,
+                    isActive = t.isActive ?? false,
 
-            var rawTags = _objContext.tmTags
-            .Include(t => t.nTransaction)
-            .ToList();
+                    nTotalIncome = t.nTransactionTags
+                        .Where(tx => (tx.sType == "INCOME" || tx.sType == "Income") && (tx.sStatus == "Confirmed" || tx.sStatus == "Completed"))
+                        .Sum(tx => (decimal?)tx.nAmount) ?? 0,
 
-            var lstTags = rawTags.Select(t => new
-            {
-                nId = t.nId,
-                sName = t.sName,
-                sColorCode = t.sColorCode,
-                isActive = t.isActive ?? false,
+                    nTotalExpense = t.nTransactionTags
+                        .Where(tx => (tx.sType == "EXPENSE" || tx.sType == "Expense") && (tx.sStatus == "Confirmed" || tx.sStatus == "Completed"))
+                        .Sum(tx => (decimal?)tx.nAmount) ?? 0,
 
-                // เนื่องจาก nAmount เป็น decimal อยู่แล้ว ไม่ต้อง cast (decimal?) แล้วครับ
-                nTotalIncome = t.nTransaction
-                    .Where(tx => tx.sType == "INCOME" && tx.sStatus == "Confirmed")
-                    .Sum(tx => tx.nAmount),
+                    nTransactionCount = t.nTransactionTags.Count()
+                })
+                .ToList()
+                .Select(t => new
+                {
+                    t.nTagsId,
+                    t.sName,
+                    t.sColorCode,
+                    t.isActive,
+                    t.nTotalIncome,
+                    t.nTotalExpense,
+                    nNet = t.nTotalIncome - t.nTotalExpense,
+                    t.nTransactionCount
+                })
+                .ToList();
 
-                nTotalExpense = t.nTransaction
-                    .Where(tx => tx.sType == "EXPENSE" && tx.sStatus == "Confirmed")
-                    .Sum(tx => tx.nAmount),
-
-                nNet = t.nTransaction.Where(tx => tx.sType == "INCOME" && tx.sStatus == "Confirmed").Sum(tx => tx.nAmount) -
-                       t.nTransaction.Where(tx => tx.sType == "EXPENSE" && tx.sStatus == "Confirmed").Sum(tx => tx.nAmount),
-
-                nTransactionCount = t.nTransaction.Count()
-            }).ToList();
-
-            return lstTags;
+            return new { status = "success", data = lstTags };
         }
 
-        public object SaveTagAsync(TagInputDto req)
+        public object SaveTag(TagInputDto req)
         {
-            if (req.nId == 0)
+            if (req.nTagsId == 0)
             {
 
                 var newTag = new tmTags
@@ -63,14 +68,14 @@ namespace Backend.Services
             else
             {
                 // เคสแก้ไข (Update)
-                var existingTag = _objContext.tmTags.Find(req.nId);
+                var existingTag = _objContext.tmTags.Find(req.nTagsId);
                 if (existingTag == null) throw new Exception("ไม่พบข้อมูล Tag ที่ต้องการแก้ไข");
 
                 existingTag.sName = req.sName;
                 existingTag.sColorCode = req.sColorCode;
                 existingTag.isActive = req.isActive;
                 _objContext.tmTags.Update(existingTag);
-            }
+            } 
             _objContext.SaveChanges();
             return new { status = "success", message = "บันทึกข้อมูลเรียบร้อย" };
         }

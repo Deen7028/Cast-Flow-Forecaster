@@ -1,5 +1,5 @@
 using Backend.Interfaces;
-using Backend.Models;
+using Backend.DTOs.Tags;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -20,9 +20,9 @@ namespace Backend.Controllers
         {
             try
             {
-                var lstTags = _objTagService.GetTagsSummaryAsync();
+                var objResult = _objTagService.GetTagsSummary();
 
-                return Ok(new { status = "success", data = lstTags });
+                return Ok(objResult);
             }
             catch (Exception objEx)
             {
@@ -35,7 +35,7 @@ namespace Backend.Controllers
         {
             try
             {
-                var objResult = _objTagService.SaveTagAsync(req);
+                var objResult = _objTagService.SaveTag(req);
                 return Ok(objResult);
             }
             catch (Exception objEx)

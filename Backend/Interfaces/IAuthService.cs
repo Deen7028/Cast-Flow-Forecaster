@@ -1,5 +1,5 @@
 using Backend.DTOs.Auth;
-using Backend.Data.Entities;
+using global::Data.Entities;
 
 namespace Backend.Interfaces;
 

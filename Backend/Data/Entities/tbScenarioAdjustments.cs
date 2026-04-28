@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tbScenarioAdjustments
 {
-    public int nId { get; set; }
+    public int nScenarioAdjustmentsId { get; set; }
 
     public int nScenarioId { get; set; }
 

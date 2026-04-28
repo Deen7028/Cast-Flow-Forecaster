@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tmSystemSettings
 {
-    public int nId { get; set; }
+    public int nSystemSettingsId { get; set; }
 
     public string? sCompanyName { get; set; }
 

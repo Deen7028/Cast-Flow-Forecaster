@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Backend.Data.Entities;
+using Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Data.Context;
+namespace Data.Context;
 
 public partial class WebAppDbContext : DbContext
 {
@@ -36,7 +36,7 @@ public partial class WebAppDbContext : DbContext
     {
         modelBuilder.Entity<tbAnomalies>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tbAnomal__DF98CDDDAC773F77");
+            entity.HasKey(e => e.nIAnomaliesId).HasName("PK__tbAnomal__DF98CDDD2CE1ABBD");
 
             entity.Property(e => e.dDetectedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -58,7 +58,7 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tbAuditLogs>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tbAuditL__DF98CDDD6CB6F20D");
+            entity.HasKey(e => e.nAuditLogsId).HasName("PK__tbAuditL__DF98CDDD297DC55D");
 
             entity.Property(e => e.dActionDate)
                 .HasDefaultValueSql("(getdate())")
@@ -76,7 +76,7 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tbRecurringRules>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tbRecurr__DF98CDDD05797915");
+            entity.HasKey(e => e.nRecurringRulesId).HasName("PK__tbRecurr__DF98CDDDC8FFE816");
 
             entity.Property(e => e.dEndDate).HasColumnType("datetime");
             entity.Property(e => e.dNextRunDate).HasColumnType("datetime");
@@ -99,7 +99,7 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tbScenarioAdjustments>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tbScenar__DF98CDDD32DCA5CD");
+            entity.HasKey(e => e.nScenarioAdjustmentsId).HasName("PK__tbScenar__DF98CDDD6012488B");
 
             entity.Property(e => e.sAdjustedValue)
                 .HasMaxLength(100)
@@ -115,7 +115,7 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tbScenarios>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tbScenar__DF98CDDDCFA8C601");
+            entity.HasKey(e => e.nScenariosId).HasName("PK__tbScenar__DF98CDDD72E9F036");
 
             entity.Property(e => e.dCreatedAt)
                 .HasDefaultValueSql("(getdate())")
@@ -129,13 +129,13 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tbTransactions>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tbTransa__DF98CDDDF8C5B4B4");
+            entity.HasKey(e => e.nTransactionsId).HasName("PK__tbTransa__DF98CDDD49CF548A");
 
             entity.Property(e => e.dCreatedAt)
-                .HasDefaultValueSql("(getdate())")
+                .HasDefaultValueSql("(getdate())", "DF__tbTransac__dCrea__6754599E")
                 .HasColumnType("datetime");
             entity.Property(e => e.dTransactionDate).HasColumnType("datetime");
-            entity.Property(e => e.isAnomaly).HasDefaultValue(false);
+            entity.Property(e => e.isAnomaly).HasDefaultValue(false, "DF__tbTransac__isAno__66603565");
             entity.Property(e => e.nAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.sDescription).HasMaxLength(255);
             entity.Property(e => e.sStatus)
@@ -154,24 +154,24 @@ public partial class WebAppDbContext : DbContext
                 .HasForeignKey(d => d.nRecurringRuleId)
                 .HasConstraintName("FK_tbTransactions_tbRecurringRules");
 
-            entity.HasMany(d => d.nTag).WithMany(p => p.nTransaction)
+            entity.HasMany(d => d.nTag).WithMany(p => p.nTransactionTags)
                 .UsingEntity<Dictionary<string, object>>(
                     "tbTransactionTags",
                     r => r.HasOne<tmTags>().WithMany()
                         .HasForeignKey("nTagId")
                         .HasConstraintName("FK_tbTransactionTags_tmTags"),
                     l => l.HasOne<tbTransactions>().WithMany()
-                        .HasForeignKey("nTransactionId")
+                        .HasForeignKey("nTransactionTagsId")
                         .HasConstraintName("FK_tbTransactionTags_tbTransactions"),
                     j =>
                     {
-                        j.HasKey("nTransactionId", "nTagId").HasName("PK__tbTransa__2DC3B09B8830FA25");
+                        j.HasKey("nTransactionTagsId", "nTagId").HasName("PK__tbTransa__2DC3B09BBB415B44");
                     });
         });
 
         modelBuilder.Entity<tmCategories>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tmCatego__DF98CDDDEA29F327");
+            entity.HasKey(e => e.nCategoriesId).HasName("PK__tmCatego__DF98CDDD60FCA957");
 
             entity.Property(e => e.isActive).HasDefaultValue(true);
             entity.Property(e => e.sName).HasMaxLength(100);
@@ -182,9 +182,9 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tmSystemSettings>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tmSystem__DF98CDDDA84D54F9");
+            entity.HasKey(e => e.nSystemSettingsId).HasName("PK__tmSystem__DF98CDDD4E8BF7D8");
 
-            entity.Property(e => e.nId).HasDefaultValue(1);
+            entity.Property(e => e.nSystemSettingsId).HasDefaultValue(1);
             entity.Property(e => e.dUpdatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -212,7 +212,7 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tmTags>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tmTags__DF98CDDD4AC6668F");
+            entity.HasKey(e => e.nTagsId).HasName("PK__tmTags__DF98CDDD0B310073");
 
             entity.Property(e => e.isActive).HasDefaultValue(true);
             entity.Property(e => e.sColorCode)
@@ -223,9 +223,9 @@ public partial class WebAppDbContext : DbContext
 
         modelBuilder.Entity<tmUsers>(entity =>
         {
-            entity.HasKey(e => e.nId).HasName("PK__tmUsers__DF98CDDDB8DCE167");
+            entity.HasKey(e => e.nUsersId).HasName("PK__tmUsers__DF98CDDD2EDB2EAD");
 
-            entity.HasIndex(e => e.sUsername, "UQ__tmUsers__3FEB876712903040").IsUnique();
+            entity.HasIndex(e => e.sUsername, "UQ__tmUsers__3FEB8767C8F9FC5B").IsUnique();
 
             entity.Property(e => e.dCreatedAt)
                 .HasDefaultValueSql("(getdate())")

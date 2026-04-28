@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tmUsers
 {
-    public int nId { get; set; }
+    public int nUsersId { get; set; }
 
     public string sUsername { get; set; } = null!;
 

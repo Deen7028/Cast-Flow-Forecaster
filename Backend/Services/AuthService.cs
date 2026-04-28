@@ -1,8 +1,8 @@
 using Backend.DTOs.Auth;
 using Backend.Interfaces;
-using Backend.Data.Context;
+using global::Data.Context;
 using Microsoft.EntityFrameworkCore;
-using Backend.Data.Entities;
+using global::Data.Entities;
 
 namespace Backend.Services;
 
@@ -34,7 +34,7 @@ public class AuthService : IAuthService
             Token = "mock-jwt-token-for-now", // TODO: Implement JWT
             User = new UserInfoDto
             {
-                Id = user.nId,
+                nUsersId = user.nUsersId,
                 Username = user.sUsername,
                 FullName = user.sFullName ?? "",
                 Role = user.sRole
@@ -51,7 +51,7 @@ public class AuthService : IAuthService
 
         return new UserInfoDto
         {
-            Id = user.nId,
+            nUsersId = user.nUsersId,
             Username = user.sUsername,
             FullName = user.sFullName ?? "",
             Role = user.sRole
@@ -60,7 +60,7 @@ public class AuthService : IAuthService
 
     public tmUsers RegisterUser(tmUsers user)
     {
-        var objUser = _context.tmUsers.FirstOrDefault(w => w.nId == user.nId);
+        var objUser = _context.tmUsers.FirstOrDefault(w => w.nUsersId == user.nUsersId);
         if (objUser == null)
         {
             objUser = new tmUsers();

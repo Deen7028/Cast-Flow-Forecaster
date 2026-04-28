@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tbTransactions
 {
-    public int nId { get; set; }
+    public int nTransactionsId { get; set; }
 
     public string sType { get; set; } = null!;
 
@@ -26,6 +26,8 @@ public partial class tbTransactions
     public bool? isAnomaly { get; set; }
 
     public DateTime? dCreatedAt { get; set; }
+
+    public bool isActive { get; set; }
 
     public virtual tmCategories nCategory { get; set; } = null!;
 

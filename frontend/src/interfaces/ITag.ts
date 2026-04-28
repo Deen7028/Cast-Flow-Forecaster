@@ -1,5 +1,5 @@
 export interface ITag {
-    nId: number;
+    nTagsId: number;
     sName: string;
     sColorCode: string;
     isActive: boolean;

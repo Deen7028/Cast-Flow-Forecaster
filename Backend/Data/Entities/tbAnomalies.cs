@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backend.Data.Entities;
+namespace Data.Entities;
 
 public partial class tbAnomalies
 {
-    public int nId { get; set; }
+    public int nIAnomaliesId { get; set; }
 
     public string sTitle { get; set; } = null!;
 

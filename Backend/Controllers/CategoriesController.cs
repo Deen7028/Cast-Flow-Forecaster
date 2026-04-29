@@ -1,5 +1,5 @@
 using Backend.Interfaces;
-using Data.Entities;
+using Backend.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;

@@ -1,5 +1,5 @@
 using Backend.DTOs.Recurring;
-using Data.Entities;
+using Backend.Data.Entities;
 
 
 namespace Backend.Interfaces;

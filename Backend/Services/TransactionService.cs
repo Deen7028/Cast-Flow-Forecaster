@@ -1,8 +1,8 @@
 using Backend.Interfaces;
 using Backend.DTOs.Transaction;
-using global::Data.Context;
+using Backend.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using global::Data.Entities;
+using Backend.Data.Entities;
 
 namespace Backend.Services
 {

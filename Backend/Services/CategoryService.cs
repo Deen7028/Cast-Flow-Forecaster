@@ -1,5 +1,5 @@
-using Data.Context;
-using Data.Entities;
+using Backend.Data.Context;
+using Backend.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Interfaces

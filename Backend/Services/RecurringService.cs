@@ -1,7 +1,7 @@
 using Backend.DTOs.Recurring;
 using Backend.Interfaces;
-using Data.Context;
-using Data.Entities;
+using Backend.Data.Context;
+using Backend.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 

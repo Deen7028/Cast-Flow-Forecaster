@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace Data.Entities;
+
+public partial class tbScenarios
+{
+    public int nScenariosId { get; set; }
+
+    public string sName { get; set; } = null!;
+
+    public string? sStatus { get; set; }
+
+    public DateTime? dCreatedAt { get; set; }
+
+    public virtual ICollection<tbScenarioAdjustments> tbScenarioAdjustments { get; set; } = new List<tbScenarioAdjustments>();
+}

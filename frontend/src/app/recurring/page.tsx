@@ -29,9 +29,6 @@ export default function RecurringPage() {
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [selectedRuleName, setSelectedRuleName] = useState('');
 
-
-
-
   useEffect(() => {
     fetchRules();
   }, []);
@@ -245,7 +242,7 @@ export default function RecurringPage() {
           </Paper>
         ))}
       </Box>
-      
+
       <Box
         sx={{
           display: 'flex',

@@ -27,10 +27,10 @@ public class AuthController : ControllerBase
 
         if (objResult == null)
         {
-            return Unauthorized(new { message = "Username หรือ Password ไม่ถูกต้อง" });
+            return Unauthorized(new { status = "error", message = "Username หรือ Password ไม่ถูกต้อง" });
         }
 
-        return Ok(objResult);
+        return Ok(new { status = "success", data = objResult });
     }
 
     [HttpGet("profile")]
@@ -39,15 +39,15 @@ public class AuthController : ControllerBase
         var objUser = _objAuthService.GetUserProfile(sUsername);
         if (objUser == null)
         {
-            return NotFound(new { message = "ไม่พบข้อมูลผู้ใช้งาน" });
+            return NotFound(new { status = "error", message = "ไม่พบข้อมูลผู้ใช้งาน" });
         }
-        return Ok(objUser);
+        return Ok(new { status = "success", data = objUser });
     }
 
     [HttpPost]
     public ActionResult<tbUsers> PostUser(tbUsers objUser)
     {
         var objResult = _objAuthService.RegisterUser(objUser);
-        return CreatedAtAction(nameof(GetProfile), new { id = objResult.nUsersId }, objResult);
+        return CreatedAtAction(nameof(GetProfile), new { id = objResult.nUsersId }, new { status = "success", data = objResult });
     } 
 }

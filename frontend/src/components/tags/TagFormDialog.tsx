@@ -155,7 +155,7 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
                     {isLoading ? 'Saving...' : 'Save'}
                 </Button>
             </DialogActions>
-            <NotificationComponent />
+            {NotificationComponent}
         </Dialog>
     );
 };

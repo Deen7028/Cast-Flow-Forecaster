@@ -494,7 +494,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                 objEditData={null}
             />
 
-            <NotificationComponent />
+            {NotificationComponent}
         </Dialog>
     );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Snackbar, Alert } from '@mui/material';
 
 export type NotificationSeverity = 'success' | 'error' | 'info' | 'warning';
@@ -10,15 +10,18 @@ export const useNotification = () => {
         severity: 'success'
     });
 
-    const notify = (message: string, severity: NotificationSeverity = 'success') => {
+    const notify = useCallback((message: string, severity: NotificationSeverity = 'success') => {
         setNotification({ open: true, message, severity });
-    };
+    }, []);
 
-    const handleClose = () => {
+    const handleClose = useCallback((event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
         setNotification(prev => ({ ...prev, open: false }));
-    };
+    }, []);
 
-    const NotificationComponent = () => (
+    const NotificationComponent = (
         <Snackbar 
             open={notification.open} 
             autoHideDuration={3000} 

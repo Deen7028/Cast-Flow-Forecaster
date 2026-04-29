@@ -129,7 +129,7 @@ export const CategoryFormDialog = ({ isOpen, onClose, onSaved, objEditData }: IC
                     </Button>
                 </DialogActions>
             </form>
-            <NotificationComponent />
+            {NotificationComponent}
         </Dialog>
     );
 };

@@ -485,7 +485,7 @@ export const TransactionsContainer = () => {
                 objEditData={objSelectedTx ? objSelectedTx._raw : null}
             />
 
-            <NotificationComponent />
+            {NotificationComponent}
         </Box>
     );
 };

@@ -17,53 +17,53 @@ public class RecurringController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RecurringRuleDto>>> GetAll()
+    public ActionResult<IEnumerable<RecurringRuleDto>> GetAll()
     {
-        var rules = await _recurringService.GetAllAsync();
+        var rules = _recurringService.GetAll();
         return Ok(rules);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<RecurringRuleDto>> GetById(int id)
+    public ActionResult<RecurringRuleDto> GetById(int id)
     {
-        var rule = await _recurringService.GetByIdAsync(id);
+        var rule = _recurringService.GetById(id);
         if (rule == null) return NotFound();
         return Ok(rule);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateRecurringRuleDto dto)
+    public IActionResult Create([FromBody] CreateRecurringRuleDto dto)
     {
-        var result = await _recurringService.CreateAsync(dto);
+        var result = _recurringService.Create(dto);
         return Ok(result);
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public IActionResult Delete(int id)
     {
-        var result = await _recurringService.DeleteAsync(id);
+        var result = _recurringService.Delete(id);
         if (!result) return NotFound();
         return Ok(result);
     }
 
     [HttpGet("{id}/history")]
-    public async Task<IActionResult> GetHistory(int id)
+    public IActionResult GetHistory(int id)
     {
-        var result = await _recurringService.GetHistoryAsync(id);
+        var result = _recurringService.GetHistory(id);
         return Ok(result);
     }
 
     [HttpPost("bulk-status")]
-    public async Task<IActionResult> BulkUpdateStatus([FromBody] BulkStatusRequest request)
+    public IActionResult BulkUpdateStatus([FromBody] BulkStatusRequest request)
     {
-        var result = await _recurringService.BulkUpdateStatusAsync(request.Ids, request.IsActive);
+        var result = _recurringService.BulkUpdateStatus(request.Ids, request.IsActive);
         return Ok(result);
     }
 
     [HttpPost("bulk-delete")]
-    public async Task<IActionResult> BulkDelete([FromBody] List<int> ids)
+    public IActionResult BulkDelete([FromBody] List<int> ids)
     {
-        var result = await _recurringService.BulkDeleteAsync(ids);
+        var result = _recurringService.BulkDelete(ids);
         return Ok(result);
     }
 

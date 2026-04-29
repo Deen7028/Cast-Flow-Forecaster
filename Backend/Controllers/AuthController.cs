@@ -10,7 +10,6 @@ namespace Backend.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _objAuthService;
-
     public AuthController(IAuthService objAuthService)
     {
         _objAuthService = objAuthService;

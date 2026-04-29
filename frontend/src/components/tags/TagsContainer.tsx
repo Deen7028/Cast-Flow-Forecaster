@@ -127,7 +127,7 @@ export const TagsContainer = () => {
                 objEditData={objSelectedTag}
             />
 
-            <NotificationComponent />
+            {NotificationComponent}
         </Box>
     );
 };

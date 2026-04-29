@@ -36,7 +36,7 @@ export default function RecurringPage() {
   const fetchRules = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring`);
       if (!response.ok) {
         throw new Error('Failed to fetch recurring rules');
       }
@@ -88,7 +88,7 @@ export default function RecurringPage() {
 
   const handleSave = async (payload: any) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -120,7 +120,7 @@ export default function RecurringPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('ยืนยันการลบกฎการทำซ้ำนี้? ข้อมูลประวัติการทำรายการจะยังคงอยู่')) return;
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring/${id}`, {
         method: 'DELETE',
       });
       if (response.ok) fetchRules();
@@ -131,7 +131,7 @@ export default function RecurringPage() {
 
   const handleToggleActive = async (rule: RecurringRule) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring/bulk-status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring/bulk-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: [rule.nRecurringRulesId], isActive: !rule.isActive }),
@@ -147,7 +147,7 @@ export default function RecurringPage() {
     if (e) e.stopPropagation();
     setSelectedRuleName(rule.sName);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring/${rule.nRecurringRulesId}/history`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring/${rule.nRecurringRulesId}/history`);
       if (response.ok) {
         const data = await response.json();
         setHistoryData(data);
@@ -161,7 +161,7 @@ export default function RecurringPage() {
   const handleBulkStatus = async (isActive: boolean) => {
     if (selectedIds.length === 0) return;
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring/bulk-status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring/bulk-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: selectedIds, isActive }),
@@ -179,7 +179,7 @@ export default function RecurringPage() {
     if (selectedIds.length === 0) return;
     if (!confirm(`ยืนยันการลบ ${selectedIds.length} รายการที่เลือก?`)) return;
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5221/api'}/Recurring/bulk-delete`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Recurring/bulk-delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(selectedIds),

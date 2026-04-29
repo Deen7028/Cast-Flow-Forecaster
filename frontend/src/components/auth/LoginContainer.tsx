@@ -153,7 +153,7 @@ export const LoginContainer = () => {
           </Box>
         </Paper>
       </Container>
-      <NotificationComponent />
+      {NotificationComponent}
     </Box>
   );
 };

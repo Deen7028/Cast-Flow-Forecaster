@@ -6,11 +6,11 @@ namespace Backend.Interfaces;
 
 public interface IRecurringService
 {
-    Task<IEnumerable<RecurringRuleDto>> GetAllAsync();
-    Task<RecurringRuleDto?> GetByIdAsync(int id);
-    Task<RecurringRuleDto> CreateAsync(CreateRecurringRuleDto dto);
-    Task<bool> DeleteAsync(int id);
-    Task<IEnumerable<tbTransactions>> GetHistoryAsync(int id);
-    Task<bool> BulkUpdateStatusAsync(List<int> ids, bool isActive);
-    Task<bool> BulkDeleteAsync(List<int> ids);
+    IEnumerable<RecurringRuleDto> GetAll();
+    RecurringRuleDto? GetById(int id);
+    RecurringRuleDto Create(CreateRecurringRuleDto dto);
+    bool Delete(int id);
+    IEnumerable<tbTransactions> GetHistory(int id);
+    bool BulkUpdateStatus(List<int> ids, bool isActive);
+    bool BulkDelete(List<int> ids);
 }

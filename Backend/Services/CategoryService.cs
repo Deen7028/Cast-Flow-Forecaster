@@ -6,7 +6,7 @@ namespace Backend.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<tmCategories>> GetAllAsync();
+        IEnumerable<tmCategories> GetAll();
     }
 }
 
@@ -23,9 +23,9 @@ namespace Backend.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<tmCategories>> GetAllAsync()
+        public IEnumerable<tmCategories> GetAll()
         {
-            return await _context.tmCategories.Where(c => c.isActive == true).ToListAsync();
+            return _context.tmCategories.Where(c => c.isActive == true).ToList();
         }
     }
 }

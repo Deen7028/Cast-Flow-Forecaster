@@ -16,9 +16,9 @@ public class RecurringService : IRecurringService
         _context = context;
     }
 
-    public async Task<IEnumerable<RecurringRuleDto>> GetAllAsync()
+    public IEnumerable<RecurringRuleDto> GetAll()
     {
-        return await _context.tbRecurringRules
+        return _context.tbRecurringRules
             .Include(r => r.nCategory)
             .Select(r => new RecurringRuleDto
             {
@@ -36,12 +36,12 @@ public class RecurringService : IRecurringService
                 isActive = r.isActive,
                 dNextRunDate = r.dNextRunDate
             })
-            .ToListAsync();
+            .ToList();
     }
 
-    public async Task<RecurringRuleDto?> GetByIdAsync(int id)
+    public RecurringRuleDto? GetById(int id)
     {
-        return await _context.tbRecurringRules
+        return _context.tbRecurringRules
             .Include(r => r.nCategory)
             .Where(r => r.nRecurringRulesId == id)
             .Select(r => new RecurringRuleDto
@@ -60,10 +60,10 @@ public class RecurringService : IRecurringService
                 isActive = r.isActive,
                 dNextRunDate = r.dNextRunDate
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefault();
     }
 
-    public async Task<RecurringRuleDto> CreateAsync(CreateRecurringRuleDto dto)
+    public RecurringRuleDto Create(CreateRecurringRuleDto dto)
     {
         var objRecurring = _context.tbRecurringRules.FirstOrDefault(w => w.nRecurringRulesId == dto.nRecurringRulesId);
         
@@ -97,8 +97,8 @@ public class RecurringService : IRecurringService
         // Calculate Next Run Date if it's new or certain fields changed
         objRecurring.dNextRunDate = CalculateNextRunDate(objRecurring.sFrequency, objRecurring.dStartDate, objRecurring.nDayOfMonth);
 
-        await _context.SaveChangesAsync();
-        return await GetByIdAsync(objRecurring.nRecurringRulesId) ?? throw new Exception("Failed to save rule.");
+         _context.SaveChanges();
+        return GetById(objRecurring.nRecurringRulesId) ?? throw new Exception("Failed to save rule.");
     }
 
     private DateTime CalculateNextRunDate(string frequency, DateTime startDate, int? dayOfMonth)
@@ -137,42 +137,42 @@ public class RecurringService : IRecurringService
 
 
 
-    public async Task<bool> DeleteAsync(int id)
+    public bool Delete(int id)
     {
-        var rule = await _context.tbRecurringRules.FindAsync(id);
+        var rule = _context.tbRecurringRules.Find(id);
         if (rule == null) return false;
 
         _context.tbRecurringRules.Remove(rule);
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
         return true;
     }
 
-    public async Task<IEnumerable<tbTransactions>> GetHistoryAsync(int id)
+    public IEnumerable<tbTransactions> GetHistory(int id)
     {
-        return await _context.tbTransactions
+        return _context.tbTransactions
             .Where(t => t.nRecurringRuleId == id)
             .OrderByDescending(t => t.dTransactionDate)
-            .ToListAsync();
+            .ToList();
     }
 
-    public async Task<bool> BulkUpdateStatusAsync(List<int> ids, bool isActive)
+    public bool BulkUpdateStatus(List<int> ids, bool isActive)
     {
-        var rules = await _context.tbRecurringRules.Where(r => ids.Contains(r.nRecurringRulesId)).ToListAsync();
+        var rules = _context.tbRecurringRules.Where(r => ids.Contains(r.nRecurringRulesId)).ToList();
         foreach (var rule in rules)
         {
             rule.isActive = isActive;
         }
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
         return true;
     }
 
-    public async Task<bool> BulkDeleteAsync(List<int> ids)
+    public bool BulkDelete(List<int> ids)
     {
-        var rules = await _context.tbRecurringRules.Where(r => ids.Contains(r.nRecurringRulesId)).ToListAsync();
+        var rules = _context.tbRecurringRules.Where(r => ids.Contains(r.nRecurringRulesId)).ToList();
         if (rules.Any())
         {
             _context.tbRecurringRules.RemoveRange(rules);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
         return true;
     }

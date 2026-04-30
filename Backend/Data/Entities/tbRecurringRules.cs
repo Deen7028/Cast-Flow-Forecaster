@@ -28,6 +28,7 @@ public partial class tbRecurringRules
     public DateTime? dNextRunDate { get; set; }
     public DateTime? dPausedUntil { get; set; }
     public DateTime? dSkipNextDate { get; set; }
+    public bool isDeleted { get; set; }
 
     public virtual tmCategories nCategory { get; set; } = null!;
 

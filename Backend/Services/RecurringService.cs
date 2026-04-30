@@ -19,6 +19,7 @@ public class RecurringService : IRecurringService
     public IEnumerable<RecurringRuleDto> GetAll()
     {
         return _context.tbRecurringRules
+            .Where(r => r.isDeleted == false)
             .Include(r => r.nCategory)
             .Select(r => new RecurringRuleDto
             {
@@ -34,6 +35,7 @@ public class RecurringService : IRecurringService
                 CategoryType = r.nCategory.sType,
                 nSpikeThreshold = r.nSpikeThreshold,
                 isActive = r.isActive,
+                isDeleted = r.isDeleted,
                 dNextRunDate = r.dNextRunDate
             })
             .ToList();
@@ -58,6 +60,7 @@ public class RecurringService : IRecurringService
                 CategoryType = r.nCategory.sType,
                 nSpikeThreshold = r.nSpikeThreshold,
                 isActive = r.isActive,
+                isDeleted = r.isDeleted,
                 dNextRunDate = r.dNextRunDate
             })
             .FirstOrDefault();
@@ -142,7 +145,8 @@ public class RecurringService : IRecurringService
         var rule = _context.tbRecurringRules.Find(id);
         if (rule == null) return false;
 
-        _context.tbRecurringRules.Remove(rule);
+        // ใช้ isDeleted แทนการลบจริง เพื่อรักษาความสัมพันธ์กับ Transaction และแยกจาก isActive (เปิด/ปิด)
+        rule.isDeleted = true;
         _context.SaveChanges();
         return true;
     }
@@ -169,11 +173,11 @@ public class RecurringService : IRecurringService
     public bool BulkDelete(List<int> ids)
     {
         var rules = _context.tbRecurringRules.Where(r => ids.Contains(r.nRecurringRulesId)).ToList();
-        if (rules.Any())
+        foreach (var rule in rules)
         {
-            _context.tbRecurringRules.RemoveRange(rules);
-            _context.SaveChanges();
+            rule.isDeleted = true;
         }
+        _context.SaveChanges();
         return true;
     }
 

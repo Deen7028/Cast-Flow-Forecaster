@@ -15,4 +15,5 @@ public class RecurringRuleDto
     public decimal? nSpikeThreshold { get; set; }
     public bool? isActive { get; set; }
     public DateTime? dNextRunDate { get; set; }
+    public bool isDeleted { get; set; }
 }

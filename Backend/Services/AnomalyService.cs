@@ -176,7 +176,7 @@ public class AnomalyService : IAnomalyService
         if (settings.isCheckFixedCost == true)
         {
             var activeRules = _context.tbRecurringRules
-                .Where(r => r.isActive == true && r.dStartDate <= DateTime.UtcNow)
+                .Where(r => r.isActive == true && r.isDeleted == false && r.dStartDate <= DateTime.UtcNow)
                 .ToList();
 
             foreach (var rule in activeRules)
@@ -274,7 +274,7 @@ public class AnomalyService : IAnomalyService
         foreach (var alert in activeMissingCosts)
         {
             var ruleName = alert.sTitle.Replace("Missing Fixed Cost: ", "");
-            var rule = _context.tbRecurringRules.FirstOrDefault(r => r.sName == ruleName && r.isActive == true);
+            var rule = _context.tbRecurringRules.FirstOrDefault(r => r.sName == ruleName && r.isActive == true && r.isDeleted == false);
             
             if (rule == null) {
                 alert.isReviewed = true;

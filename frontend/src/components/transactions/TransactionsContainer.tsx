@@ -81,7 +81,7 @@ export const TransactionsContainer = () => {
                         sCatBg: isIncome ? "rgba(0, 229, 160, 0.1)" : "rgba(255, 77, 109, 0.1)",
                         sTagName: item.sTagName || "Untagged",
                         sTagColor: item.sTagColor || "#7a8499",
-                        sDate: dayjs(item.dDate).format('YYYY-MM-DD'),
+                        sDate: dayjs(item.dDate).format('DD/MM/YY'),
                         sAmount: `${isIncome ? '+' : '-'}฿${item.nAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
                         isIncome: isIncome,
                         sStatus: item.sStatus || "Confirmed",
@@ -103,8 +103,7 @@ export const TransactionsContainer = () => {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchTransactions();
-        
-        // Fetch Tags for search dropdown
+
         const fetchTags = async () => {
             try {
                 const tagRes = await tagService.getAll() as IApiResponse<ITag[]>;
@@ -115,13 +114,11 @@ export const TransactionsContainer = () => {
         };
         fetchTags();
     }, [fetchTransactions]);
-    
-    // Get unique tags by name for the filter dropdown
+
     const lstUniqueTags = useMemo(() => {
         const lstUnique: ITag[] = [];
         const setNames = new Set<string>();
-        
-        // Only show active tags in the filter dropdown (Support 0/1, "0"/"1", and true/false)
+
         const lstFiltered = lstTags.filter(t => Number(t.isActive) === 1 || t.isActive === true);
 
         lstFiltered.forEach(t => {
@@ -142,11 +139,9 @@ export const TransactionsContainer = () => {
                 obj.sCategory.toLowerCase().includes(sSearch.toLowerCase());
 
             const matchesType = sTypeFilter === 'all' || (sTypeFilter === 'income' ? obj.isIncome : !obj.isIncome);
-            
-            // Status Filter (Case-sensitive matching with Enum)
+
             const matchesStatus = sStatusFilter === 'all' || obj.sStatus === sStatusFilter;
 
-            // Tag Filter
             const matchesTag = sTagFilter === 'all' || obj.sTagName === sTagFilter;
 
             let isMatchesDate = true;
@@ -157,7 +152,6 @@ export const TransactionsContainer = () => {
         });
     }, [lstTransactions, sSearch, sTypeFilter, sStatusFilter, sTagFilter, sStartDate, sEndDate]);
 
-    // 2. Sorting Logic
     const lstSortedTransactions = useMemo(() => {
         const lstSorted = [...lstFilteredTransactions];
         lstSorted.sort((a, b) => {
@@ -169,7 +163,6 @@ export const TransactionsContainer = () => {
                 valA = a._raw.nAmount;
                 valB = b._raw.nAmount;
             } else {
-                // ฟิลด์ทั่วไปที่เป็น string หรือ number ใน ITransactionDisplay
                 const key = sSortField as keyof ITransactionDisplay;
                 const rawValA = a[key];
                 const rawValB = b[key];
@@ -184,7 +177,6 @@ export const TransactionsContainer = () => {
         return lstSorted;
     }, [lstFilteredTransactions, sSortField, sSortOrder]);
 
-    // 3. Stats for Filtered Data
     const objFilteredStats = useMemo(() => {
         let nIncome = 0; let nExpense = 0;
         lstFilteredTransactions.forEach(tx => {
@@ -194,7 +186,6 @@ export const TransactionsContainer = () => {
         return { nTotalIncome: nIncome, nTotalExpense: nExpense, nNet: nIncome - nExpense };
     }, [lstFilteredTransactions]);
 
-    // 4. Pagination Logic
     const nTotalPages = Math.ceil(lstSortedTransactions.length / nRowsPerPage);
     const lstPagedTransactions = useMemo(() => {
         const nStartIndex = (nPage - 1) * nRowsPerPage;
@@ -286,97 +277,99 @@ export const TransactionsContainer = () => {
                         slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
                         sx={{ bgcolor: 'background.paper', borderRadius: 1 }}
                     />
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 'auto' }}>
-                        <TextField
-                            size="small"
-                            type="date"
-                            label="Start"
-                            value={sStartDate}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setSStartDate(val);
-                                setNPage(1);
-                                if (sEndDate && val && dayjs(val).isAfter(dayjs(sEndDate))) {
-                                    setSEndDate(val);
-                                }
-                            }}
-                            slotProps={{
-                                inputLabel: { shrink: true },
-                                htmlInput: { max: sEndDate || undefined }
-                            }}
-                            sx={{
-                                width: 130, bgcolor: 'background.paper', input: { color: '#fff' },
-                                '& input::-webkit-calendar-picker-indicator': {
-                                    filter: 'invert(1)',
-                                    cursor: 'pointer'
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 'auto' }}>
-                        <TextField
-                            size="small"
-                            type="date"
-                            label="End"
-                            value={sEndDate}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                setSEndDate(val);
-                                setNPage(1);
-                                if (sStartDate && val && dayjs(val).isBefore(dayjs(sStartDate))) {
-                                    setSStartDate(val);
-                                }
-                            }}
-                            slotProps={{
-                                inputLabel: { shrink: true },
-                                htmlInput: { min: sStartDate || undefined }
-                            }}
-                            sx={{
-                                width: 130, bgcolor: 'background.paper', input: { color: '#fff' },
-                                '& input::-webkit-calendar-picker-indicator': {
-                                    filter: 'invert(1)',
-                                    cursor: 'pointer'
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 'auto' }}>
-                        <Select size="small" fullWidth value={sTypeFilter} onChange={e => { setSTypeFilter(e.target.value as string); setNPage(1); }} sx={{ minWidth: 100, bgcolor: 'background.paper' }}>
-                            <MenuItem value="all">All Types</MenuItem>
-                            <MenuItem value="income">Income</MenuItem>
-                            <MenuItem value="expense">Expense</MenuItem>
-                        </Select>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 'auto' }}>
-                        <Select size="small" fullWidth value={sStatusFilter} onChange={e => { setSStatusFilter(e.target.value as string); setNPage(1); }} sx={{ minWidth: 100, bgcolor: 'background.paper' }}>
-                            <MenuItem value="all">All Status</MenuItem>
-                            {Object.values(TransactionStatus).map(status => (
-                                <MenuItem key={status} value={status}>{status}</MenuItem>
-                            ))}
-                        </Select>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 'auto' }}>
-                        <Select
-                            size="small"
-                            fullWidth
-                            value={lstUniqueTags.some(t => t.sName === sTagFilter) || sTagFilter === 'all' ? sTagFilter : 'all'}
-                            onChange={e => { setSTagFilter(e.target.value as string); setNPage(1); }}
-                            sx={{ minWidth: 100, bgcolor: 'background.paper' }}
-                        >
-                            <MenuItem value="all">All Tags</MenuItem>
-                            {lstUniqueTags.map(tag => (
-                                <MenuItem key={tag.nTagsId} value={tag.sName}>{tag.sName}</MenuItem>
-                            ))}
-                        </Select>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 'auto' }}>
-                        <Button variant="outlined" fullWidth color="inherit" startIcon={<DownloadIcon />} onClick={handleExportCSV} sx={{ borderColor: 'divider', color: 'text.secondary' }}>Export</Button>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 'auto' }}>
-                        <Button variant="contained" fullWidth color="primary" onClick={handleAddNew}>＋ Add</Button>
-                    </Grid>
                 </Grid>
+                <Grid size={{ xs: 6, sm: 'auto' }}>
+                    <TextField
+                        size="small"
+                        type="date"
+                        label="Start"
+                        value={sStartDate}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setSStartDate(val);
+                            setNPage(1);
+                            if (sEndDate && val && dayjs(val).isAfter(dayjs(sEndDate))) {
+                                setSEndDate(val);
+                            }
+                        }}
+                        slotProps={{
+                            inputLabel: { shrink: true },
+                            htmlInput: { max: sEndDate || undefined }
+                        }}
+                        sx={{
+                            width: "100%",
+                            bgcolor: 'background.paper', input: { color: '#fff' },
+                            '& input::-webkit-calendar-picker-indicator': {
+                                filter: 'invert(1)',
+                                cursor: 'pointer'
+                            }
+                        }}
+                    />
+                </Grid>
+                <Grid size={{ xs: 6, sm: 'auto' }}>
+                    <TextField
+                        size="small"
+                        type="date"
+                        label="End"
+                        value={sEndDate}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setSEndDate(val);
+                            setNPage(1);
+                            if (sStartDate && val && dayjs(val).isBefore(dayjs(sStartDate))) {
+                                setSStartDate(val);
+                            }
+                        }}
+                        slotProps={{
+                            inputLabel: { shrink: true },
+                            htmlInput: { min: sStartDate || undefined }
+                        }}
+                        sx={{
+                            width: "100%",
+                            bgcolor: 'background.paper', input: { color: '#fff' },
+                            '& input::-webkit-calendar-picker-indicator': {
+                                filter: 'invert(1)',
+                                cursor: 'pointer'
+                            }
+                        }}
+                    />
+                </Grid>
+                <Grid size={{ xs: 6, sm: 'auto' }}>
+                    <Select size="small" fullWidth value={sTypeFilter} onChange={e => { setSTypeFilter(e.target.value as string); setNPage(1); }} sx={{ minWidth: 100, bgcolor: 'background.paper', fontSize: 14 }}>
+                        <MenuItem value="all">All Types</MenuItem>
+                        <MenuItem value="income">Income</MenuItem>
+                        <MenuItem value="expense">Expense</MenuItem>
+                    </Select>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 'auto' }}>
+                    <Select size="small" fullWidth value={sStatusFilter} onChange={e => { setSStatusFilter(e.target.value as string); setNPage(1); }} sx={{ minWidth: 100, bgcolor: 'background.paper', fontSize: 14 }}>
+                        <MenuItem value="all">All Status</MenuItem>
+                        {Object.values(TransactionStatus).map(status => (
+                            <MenuItem key={status} value={status}>{status}</MenuItem>
+                        ))}
+                    </Select>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 'auto' }}>
+                    <Select
+                        size="small"
+                        fullWidth
+                        value={lstUniqueTags.some(t => t.sName === sTagFilter) || sTagFilter === 'all' ? sTagFilter : 'all'}
+                        onChange={e => { setSTagFilter(e.target.value as string); setNPage(1); }}
+                        sx={{ minWidth: 100, bgcolor: 'background.paper', fontSize: 14 }}
+                    >
+                        <MenuItem value="all">All Tags</MenuItem>
+                        {lstUniqueTags.map(tag => (
+                            <MenuItem key={tag.nTagsId} value={tag.sName}>{tag.sName}</MenuItem>
+                        ))}
+                    </Select>
+                </Grid>
+                <Grid size={{ xs: 6, sm: 'auto' }}>
+                    <Button variant="outlined" fullWidth color="inherit" startIcon={<DownloadIcon />} onClick={handleExportCSV} sx={{ borderColor: 'divider', color: 'text.secondary' }}>Export</Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 'auto' }}>
+                    <Button variant="contained" fullWidth color="primary" onClick={handleAddNew}>＋ Add</Button>
+                </Grid>
+            </Grid>
 
             {/* 2. Stats Row */}
             <Grid container spacing={2}>

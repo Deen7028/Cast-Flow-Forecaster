@@ -4,3 +4,4 @@ export * from './CashFlowChart';
 export * from './ScenarioPanel';
 export * from './RecentTransactions';
 export * from './RecurringEngine';
+export * from './AnomalyAlerts';

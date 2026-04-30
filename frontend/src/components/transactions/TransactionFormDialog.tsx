@@ -84,7 +84,6 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
         const lstUnique: ICategory[] = [];
         const setKeys = new Set<string>();
 
-        // Filter active or selected categories first (Support 0/1, "0"/"1", and true/false)
         const lstFiltered = lstCategories.filter(c => c.isActive !== false || c.nCategoriesId === objEditData?.nCategoryId);
 
         lstFiltered.forEach(c => {

@@ -5,3 +5,5 @@ export * from './ITag';
 export * from './Irecurring';
 export * from './Icategory';
 export * from './IUser';
+export * from './IAnomaly';
+export * from './IDashboardMetrics';

@@ -17,7 +17,7 @@ public partial class tbTransactions
 
     public DateTime dTransactionDate { get; set; }
 
-    public string sStatus { get; set; } = null!;
+    public string sStatus { get; set; }
 
     public string? sNotes { get; set; }
 

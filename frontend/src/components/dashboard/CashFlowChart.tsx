@@ -1,21 +1,58 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Paper, Typography, Box, Chip } from '@mui/material';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
-import CircleIcon from '@mui/icons-material/Circle';
+import dayjs from 'dayjs';
+import { ITransaction } from '@/interfaces';
 
-const data = [
-    { name: 'Jul 1', baseline: 3600000, forecast: 3600000 },
-    { name: 'Jul 15', baseline: 4000000, forecast: 4000000 },
-    { name: 'Aug 1', baseline: 4400000, forecast: 4400000 },
-    { name: 'Aug 15', baseline: 4700000, forecast: 4800000, isAnomaly: true },
-    { name: 'Sep 1', baseline: 5100000, forecast: 5300000 },
-    { name: 'Sep 30', baseline: 5600000, forecast: 5900000 }
-];
+interface Props {
+    lstTransactions?: ITransaction[];
+    nCurrentBalance?: number;
+}
 
-export const CashFlowChart = () => {
+export const CashFlowChart = ({ lstTransactions = [], nCurrentBalance = 0 }: Props) => {
+    const chartData = useMemo(() => {
+        if (!lstTransactions.length) return [];
+
+        const lstSorted = [...lstTransactions].sort((a, b) => dayjs(a.dDate).unix() - dayjs(b.dDate).unix());
+        
+        const dataMap = new Map<string, number>();
+        let currentTotal = 0; 
+
+        lstSorted.forEach(tx => {
+            const dateStr = dayjs(tx.dDate).format('MMM DD');
+            const isIncome = tx.sType?.toUpperCase() === 'INCOME';
+            currentTotal += isIncome ? tx.nAmount : -tx.nAmount;
+            dataMap.set(dateStr, currentTotal);
+        });
+
+        const offset = nCurrentBalance - currentTotal;
+
+        const result = [];
+        for (const [dateStr, val] of dataMap.entries()) {
+            const absoluteVal = val + offset;
+            result.push({
+                name: dateStr,
+                baseline: absoluteVal,
+                forecast: absoluteVal, // Simple projection
+            });
+        }
+
+        // Add a simple 30-day forecast point if we have data
+        if (result.length > 0) {
+            const lastVal = result[result.length - 1].baseline;
+            result.push({
+                name: dayjs().add(30, 'day').format('MMM DD'),
+                baseline: null,
+                forecast: lastVal * 1.05 // +5% mock forecast
+            });
+        }
+
+        return result;
+    }, [lstTransactions, nCurrentBalance]);
+
     return (
         <Paper sx={{ p: 3, bgcolor: '#0e1117', border: '1px solid #1c2233', borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -35,7 +72,7 @@ export const CashFlowChart = () => {
 
             <Box sx={{ flexGrow: 1, minHeight: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+                    <AreaChart data={chartData} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#00e5a0" stopOpacity={0.3}/>
@@ -48,10 +85,11 @@ export const CashFlowChart = () => {
                         <Tooltip 
                             contentStyle={{ backgroundColor: '#0e1117', borderColor: '#1c2233', color: '#fff', borderRadius: 8 }}
                             itemStyle={{ color: '#00e5a0' }}
+                            formatter={(val: number) => `฿${val.toLocaleString()}`}
                         />
-                        <ReferenceLine x="Aug 1" stroke="#3d4560" strokeDasharray="3 3" label={{ position: 'top', value: 'TODAY', fill: '#3d4560', fontSize: 12 }} />
-                        <Area type="monotone" dataKey="baseline" stroke="#7a8499" strokeWidth={2} strokeDasharray="5 5" fill="none" />
-                        <Area type="monotone" dataKey="forecast" stroke="#00e5a0" strokeWidth={3} fillOpacity={1} fill="url(#colorForecast)" activeDot={{ r: 6, fill: '#00e5a0', stroke: '#fff' }} />
+                        <ReferenceLine x={dayjs().format('MMM DD')} stroke="#3d4560" strokeDasharray="3 3" label={{ position: 'top', value: 'TODAY', fill: '#3d4560', fontSize: 12 }} />
+                        <Area type="monotone" dataKey="baseline" stroke="#7a8499" strokeWidth={2} strokeDasharray="5 5" fill="none" connectNulls />
+                        <Area type="monotone" dataKey="forecast" stroke="#00e5a0" strokeWidth={3} fillOpacity={1} fill="url(#colorForecast)" activeDot={{ r: 6, fill: '#00e5a0', stroke: '#fff' }} connectNulls />
                     </AreaChart>
                 </ResponsiveContainer>
             </Box>

@@ -5,6 +5,7 @@ import { Logout } from '@mui/icons-material';
 import { usePathname, useRouter } from 'next/navigation';
 import { lstNavItems } from '@/enum';
 import { useAuth } from '@/components/providers/AuthContext';
+import { anomalyService } from '@/services/anomaly.service';
 
 interface ISidebarProps {
     isMobileOpen: boolean;
@@ -18,10 +19,26 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
     const objRouter = useRouter();
     const { objUser, logout } = useAuth();
     const [isMounted, setIsMounted] = useState(false);
+    const [anomalyCount, setAnomalyCount] = useState<number>(0);
+
+    const fetchAnomalyCount = async () => {
+        try {
+            const alerts = await anomalyService.getAlerts();
+            setAnomalyCount(alerts.length);
+        } catch (error) {
+            console.error("Failed to fetch anomaly count", error);
+        }
+    };
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMounted(true);
+        fetchAnomalyCount();
+
+        // Listen for custom event to refresh count
+        const handleRefresh = () => fetchAnomalyCount();
+        window.addEventListener('refreshAnomalyCount', handleRefresh);
+        
+        return () => window.removeEventListener('refreshAnomalyCount', handleRefresh);
     }, []);
 
     const sDrawerWidth = isMobile ? '280px' : '20%';
@@ -40,6 +57,9 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
             <List sx={{ flex: 1, overflowY: 'auto', px: 1 }}>
                 {lstNavItems.map((objItem) => {
                     const isSelected = sPathname === objItem.sRoute;
+                    const isAnomalyAlert = objItem.sRoute === '/anomalies';
+                    const displayBadgeCount = isAnomalyAlert ? anomalyCount : objItem.nBadgeCount;
+
                     return (
                         <ListItem key={objItem.sRoute} disablePadding sx={{ mb: 0.5 }}>
                             <ListItemButton
@@ -57,7 +77,7 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
                                 <ListItemIcon sx={{ color: isSelected ? 'primary.main' : 'inherit', minWidth: 40, fontSize: 20 }}>
                                     {objItem.sIcon}
                                 </ListItemIcon>
-
+ 
                                 <ListItemText
                                     disableTypography
                                     primary={
@@ -72,9 +92,25 @@ export const Sidebar = ({ isMobileOpen, onMobileClose }: ISidebarProps) => {
                                         </Typography>
                                     }
                                 />
-
-                                {objItem.nBadgeCount && (
-                                    <Badge badgeContent={objItem.nBadgeCount} color="error" sx={{ mr: 1 }} />
+ 
+                                {displayBadgeCount !== undefined && displayBadgeCount > 0 && (
+                                    <Box
+                                        sx={{
+                                            bgcolor: '#ef4444',
+                                            color: 'white',
+                                            borderRadius: '50%',
+                                            width: 20,
+                                            height: 20,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold',
+                                            ml: 1
+                                        }}
+                                    >
+                                        {displayBadgeCount}
+                                    </Box>
                                 )}
                             </ListItemButton>
                         </ListItem>

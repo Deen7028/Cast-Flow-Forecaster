@@ -18,6 +18,6 @@ export const lstNavItems: INavigationItem[] = [
     { sLabel: 'Categories', sRoute: '/categories', sIcon: <Category fontSize="small" />, sGroup: 'Transactions' },
     { sLabel: 'Recurring Rules', sRoute: '/recurring', sIcon: <Sync fontSize="small" />, sGroup: 'Transactions' },
     { sLabel: 'Tags & Projects', sRoute: '/tags', sIcon: <Label fontSize="small" />, sGroup: 'Transactions' },
-    { sLabel: 'Anomaly Alerts', sRoute: '/anomalies', sIcon: <Warning fontSize="small" />, sGroup: 'Analytics', nBadgeCount: 3 },
+    { sLabel: 'Anomaly Alerts', sRoute: '/anomalies', sIcon: <Warning fontSize="small" />, sGroup: 'Analytics' },
     { sLabel: 'Settings', sRoute: '/settings', sIcon: <Settings fontSize="small" />, sGroup: 'System' },
 ];

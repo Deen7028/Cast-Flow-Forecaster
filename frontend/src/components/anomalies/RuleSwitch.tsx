@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Box, Typography, Switch, styled } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Switch, styled, CircularProgress } from '@mui/material';
 
 const NeonSwitch = styled(Switch)(({ theme }) => ({
   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -19,10 +19,33 @@ interface RuleSwitchProps {
   title: string;
   description: string;
   checked?: boolean;
+  onChange?: (newVal: boolean) => Promise<void>;
 }
 
-const RuleSwitch = ({ title, description, checked = false }: RuleSwitchProps) => {
+const RuleSwitch = ({ title, description, checked = false, onChange }: RuleSwitchProps) => {
   const [isChecked, setIsChecked] = useState(checked);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setIsChecked(checked);
+  }, [checked]);
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = e.target.checked;
+    setIsChecked(newVal); // optimistic update
+    
+    if (onChange) {
+      setIsUpdating(true);
+      try {
+        await onChange(newVal);
+      } catch (error) {
+        // revert on failure
+        setIsChecked(!newVal);
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
 
   return (
     <Box 
@@ -35,15 +58,19 @@ const RuleSwitch = ({ title, description, checked = false }: RuleSwitchProps) =>
         borderBottom: '1px solid #1e293b' 
       }}
     >
-      <Box>
+      <Box sx={{ pr: 2 }}>
         <Typography variant="body1" sx={{ color: '#f8fafc', fontWeight: 'bold' }}>{title}</Typography>
         <Typography variant="caption" sx={{ color: '#64748b' }}>{description}</Typography>
       </Box>
-      <NeonSwitch 
-        size="small" 
-        checked={isChecked} 
-        onChange={(e) => setIsChecked(e.target.checked)}
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {isUpdating && <CircularProgress size={16} sx={{ color: '#00dc82' }} />}
+        <NeonSwitch 
+          size="small" 
+          checked={isChecked} 
+          onChange={handleChange}
+          disabled={isUpdating}
+        />
+      </Box>
     </Box>
   );
 };

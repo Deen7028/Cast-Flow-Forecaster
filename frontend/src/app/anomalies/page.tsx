@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { Box, Typography, Paper, Button, Stack ,Grid } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, Paper, Button, Grid, CircularProgress, Alert as MuiAlert, Snackbar } from '@mui/material';
 import { Add, Lightbulb, Settings, History } from '@mui/icons-material';
 
 // Import Components ที่เราแยกไว้
@@ -10,7 +10,90 @@ import AlertCard from '@/components/anomalies/AlertCard';
 import RuleSwitch from '@/components/anomalies/RuleSwitch';
 import CheckIcon from '@mui/icons-material/Check';
 
+import { anomalyService, AnomalyAlert, DetectionRule } from '@/services/anomaly.service';
+
+import { useRouter } from 'next/navigation';
+
 export default function AnomaliesPage() {
+  const router = useRouter();
+  const [alerts, setAlerts] = useState<AnomalyAlert[]>([]);
+  const [rules, setRules] = useState<DetectionRule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMsg(null);
+      const [fetchedAlerts, fetchedRules] = await Promise.all([
+        anomalyService.getAlerts(),
+        anomalyService.getRules()
+      ]);
+      setAlerts(fetchedAlerts);
+      setRules(fetchedRules);
+      window.dispatchEvent(new CustomEvent('refreshAnomalyCount'));
+    } catch (error: any) {
+      console.error("Failed to fetch anomalies", error);
+      setErrorMsg(error.message || "Failed to load anomalies data.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleToggleRule = async (id: string, newStatus: boolean) => {
+    try {
+      await anomalyService.toggleRule(id, newStatus);
+      setSuccessMsg("Rule updated successfully");
+    } catch (error) {
+      console.error("Failed to toggle rule", error);
+      throw error; // ให้ RuleSwitch จับ Error เพื่อ Rollback Switch
+    }
+  };
+
+  const handleMarkAsReviewed = async (id: string) => {
+    try {
+      await anomalyService.markAsReviewed(id);
+      setAlerts(prev => prev.filter(a => a.id !== id));
+      window.dispatchEvent(new CustomEvent('refreshAnomalyCount'));
+      setSuccessMsg("Alert marked as reviewed");
+    } catch (error) {
+      console.error("Failed to mark as reviewed", error);
+      setErrorMsg("Failed to update alert status.");
+    }
+  };
+
+  const handleViewTransaction = (txId: number) => {
+    router.push(`/transactions?highlight=${txId}`);
+  };
+
+  const handleRunDetection = async () => {
+    try {
+      setIsDetecting(true);
+      await anomalyService.triggerDetection();
+      await fetchData();
+      setSuccessMsg("Detection completed. New anomalies identified if any.");
+    } catch (error) {
+      console.error("Failed to run detection", error);
+      setErrorMsg("Failed to run detection process.");
+    } finally {
+      setIsDetecting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#020617' }}>
+        <CircularProgress sx={{ color: '#00dc82' }} />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ bgcolor: '#020617', minHeight: '100vh', p: { xs: 2, md: 4 } }}>
       
@@ -19,95 +102,17 @@ export default function AnomaliesPage() {
         <Typography variant="h5" sx={{ color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 'bold' }}>
           Alerts
         </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<Add />} 
-          size="small"
-          sx={{ bgcolor: '#1e293b', color: '#94a3b8', textTransform: 'none', fontSize: '11px', border: '1px solid #334155' }}
-        >
-          Add Rule
-        </Button>
-      </Box>
-
-      {/* 2. Stats Cards */}
-      <Grid container spacing={1} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatsCard label="TOTAL ALERTS" value={3} description="This period" borderColor="#334155" />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatsCard label="HIGH SEVERITY" value={1} description="Requires action" borderColor="#f43f5e" />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <StatsCard label="MEDIUM SEVERITY" value={2} description="Review suggested" borderColor="#f59e0b" />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Paper elevation={0} sx={{ bgcolor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b', p: 3, height: '100%' }}>
-            <Typography variant="caption" sx={{ color: '#64748b' }}>DISMISSED (300)</Typography>
-            <Typography variant="h3"  sx={{ color: '#64748b', mt: 1, fontWeight:"bold" }}>7</Typography>
-            <Typography variant="caption" sx={{ color: '#64748b' }}>Historical</Typography>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* 3. Alerts List */}
-      <Box sx={{ mb: 5 }}>
-        {/* Alert 1 */}
-        <AlertCard 
-          accentColor="#f43f5e"
-          severity="HIGH"
-          title="Missing Fixed Cost: Office Rent (August)"
-          description="Recurring rule &quot;Office Rent&quot; กำหนดจ่ายวันที่ 15 ของทุกเดือน แต่ยังไม่มีรายการบันทึกในระบบสำหรับเดือนสิงหาคม ฿85,000 อาจส่งผลกระทบต่อ Cash Flow Projection"
-          date="Aug 10, 2025"
-          tags={[
-            { label: "Missing Fixed Cost", icon: <Lightbulb fontSize="small" /> }
-          ]}
-          actions={[
-            { label: "Record Now", variant: 'contained', icon:  <Add /> },
-            { label: "Dismiss", variant: 'outlined' },
-          ]}
-        />
-        
-        {/* Alert 2 */}
-        <AlertCard 
-          accentColor="#f59e0b"
-          severity="MEDIUM"
-          title="Expense Spike: AWS Infrastructure 3.2x Average"
-          description="รายจ่าย Cloud Infrastructure เดือนสิงหาคมอยู่ที่ ฿113,600 ซึ่งสูงกว่าค่าเฉลี่ย 6 เดือนย้อนหลัง (฿35,400) ถึง 3.2 เท่า แนะนำให้ตรวจสอบ cost breakdown และ resource usage"
-          date="Aug 02, 2025"
-          tags={[
-            { label: "Expense Spike", icon: <Lightbulb fontSize="small" /> },
-            { label: "SaaS Tag", icon: <Lightbulb fontSize="small" /> }
-          ]}
-          actions={[
-            { label: "View TX", variant: 'outlined' },
-            { label: "Mark Reviewed", variant: 'outlined', icon: <CheckIcon fontSize="small" /> },
-          ]}
-        />
-
-        {/* Alert 3 */}
-        <AlertCard 
-          accentColor="#f59e0b"
-          severity="MEDIUM"
-          title="Low Balance Warning: Projected below ฿3M in 45 days"
-          description="จากการคำนวณ Burn Rate ปัจจุบัน (฿41,500/วัน) และรายรับที่คาดการณ์ หากไม่มีรายได้เพิ่มภายใน 45 วัน ยอดเงินคงเหลืออาจต่ำกว่า Safety Buffer ที่กำหนด (฿3,000,000)"
-          date="Aug 10, 2025"
-          tags={[
-            { label: "Low Balance Warning", icon: <Lightbulb fontSize="small" /> }
-          ]}
-          actions={[
-            { label: "Run Scenario", variant: 'outlined' },
-            { label: "Dismiss", variant: 'outlined' },
-          ]}
-        />
-      </Box>
-
-      {/* 4. Detection Rules Section */}
-      <Paper elevation={0} sx={{ bgcolor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b', overflow: 'hidden' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: '1px solid #1e293b' }}>
-          <Typography variant="body1" sx={{ color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 'bold' }}>
-            <Settings fontSize="small" />
-            Detection Rules (Logic-based AI)
-          </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            variant="contained" 
+            startIcon={isDetecting ? <CircularProgress size={16} sx={{ color: '#020617' }} /> : <History />} 
+            size="small"
+            onClick={handleRunDetection}
+            disabled={isDetecting}
+            sx={{ bgcolor: '#1e293b', color: '#94a3b8', textTransform: 'none', fontSize: '11px', border: '1px solid #334155' }}
+          >
+            {isDetecting ? "Detecting..." : "Run Detection"}
+          </Button>
           <Button 
             variant="contained" 
             startIcon={<Add />} 
@@ -117,28 +122,106 @@ export default function AnomaliesPage() {
             Add Rule
           </Button>
         </Box>
+      </Box>
 
-        <RuleSwitch 
-          title="Expense Spike Detection" 
-          description="แจ้งเตือนเมื่อมีรายจ่ายสูงกว่าค่าเฉลี่ย N เดือนย้อนหลัง x threshold" 
-          checked={true}
-        />
-        <RuleSwitch 
-          title="Missing Fixed Cost Alert" 
-          description="ตรวจสอบ Recurring Rules ทุกวัน หากไม่พบรายการตรงกัน = แจ้งเตือน" 
-          checked={true}
-        />
-        <RuleSwitch 
-          title="Low Balance Warning" 
-          description="จำลองเงินคงเหลือหน้า 30/60/90 วัน แจ้งเตือนหากต่ำกว่า Safety Buffer" 
-          checked={true}
-        />
-        <RuleSwitch 
-          title="Unusual Income Pattern" 
-          description="แจ้งเตือนเมื่อรายรับหายไปนานกว่าปกติ (เช่น ไม่มี Invoice ใน 4 สัปดาห์)" 
-          checked={false}
-        />
+      {/* 2. Stats Cards */}
+      <Grid container spacing={1} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatsCard label="TOTAL ALERTS" value={alerts.length} description="This period" borderColor="#334155" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatsCard label="HIGH SEVERITY" value={alerts.filter(a => a.severity === 'HIGH').length} description="Requires action" borderColor="#f43f5e" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <StatsCard label="MEDIUM SEVERITY" value={alerts.filter(a => a.severity === 'MEDIUM').length} description="Review suggested" borderColor="#f59e0b" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Paper elevation={0} sx={{ bgcolor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b', p: 3, height: '100%' }}>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>SYSTEM STATUS</Typography>
+            <Typography variant="h4"  sx={{ color: '#00dc82', mt: 1, fontWeight:"bold" }}>Active</Typography>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>Monitoring Cash Flow</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* 3. Alerts List */}
+      <Box sx={{ mb: 5 }}>
+        {alerts.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 8, bgcolor: '#0f172a', borderRadius: '12px', border: '1px dashed #1e293b' }}>
+            <CheckIcon sx={{ fontSize: 48, color: '#1e293b', mb: 2 }} />
+            <Typography sx={{ color: '#94a3b8' }}>No anomalies detected recently.</Typography>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>Everything looks normal in your cash flow.</Typography>
+          </Box>
+        ) : (
+          alerts.map((alert) => (
+            <AlertCard 
+              key={alert.id}
+              accentColor={alert.severity === 'HIGH' ? '#f43f5e' : (alert.severity === 'MEDIUM' ? '#f59e0b' : '#3b82f6')}
+              severity={alert.severity}
+              title={alert.title}
+              description={alert.description}
+              date={alert.date}
+              tags={alert.tags.map(t => ({ label: t.label, icon: <Lightbulb fontSize="small" /> }))}
+              actions={[
+                { 
+                  label: alert.severity === 'HIGH' ? "Record Now" : "View TX", 
+                  variant: alert.severity === 'HIGH' ? 'contained' : 'outlined', 
+                  icon: alert.severity === 'HIGH' ? <Add /> : undefined,
+                  onClick: alert.transactionId ? () => handleViewTransaction(alert.transactionId!) : undefined
+                },
+                { 
+                  label: alert.severity === 'HIGH' ? "Dismiss" : "Mark Reviewed", 
+                  variant: 'outlined', 
+                  icon: <CheckIcon fontSize="small" />,
+                  onClick: () => handleMarkAsReviewed(alert.id)
+                },
+              ]}
+            />
+          ))
+        )}
+      </Box>
+
+      {/* 4. Detection Rules Section */}
+      <Paper elevation={0} sx={{ bgcolor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b', overflow: 'hidden' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: '1px solid #1e293b' }}>
+          <Typography variant="body1" sx={{ color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 'bold' }}>
+            <Settings fontSize="small" />
+            Detection Rules (Logic-based AI)
+          </Typography>
+        </Box>
+
+        {rules.map((rule) => (
+          <RuleSwitch 
+            key={rule.id}
+            title={rule.title} 
+            description={rule.description} 
+            checked={rule.isActive}
+            onChange={(newVal) => handleToggleRule(rule.id, newVal)}
+          />
+        ))}
       </Paper>
+      
+      <Snackbar 
+        open={!!errorMsg} 
+        autoHideDuration={6000} 
+        onClose={() => setErrorMsg(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert onClose={() => setErrorMsg(null)} severity="error" sx={{ width: '100%' }}>
+          {errorMsg}
+        </MuiAlert>
+      </Snackbar>
+
+      <Snackbar 
+        open={!!successMsg} 
+        autoHideDuration={4000} 
+        onClose={() => setSuccessMsg(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert onClose={() => setSuccessMsg(null)} severity="success" sx={{ width: '100%', bgcolor: '#00dc82', color: '#020617' }}>
+          {successMsg}
+        </MuiAlert>
+      </Snackbar>
     </Box>
   );
 }

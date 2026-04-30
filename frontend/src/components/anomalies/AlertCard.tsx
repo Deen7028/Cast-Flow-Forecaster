@@ -7,12 +7,13 @@ interface ActionButton {
   label: string;
   variant: 'contained' | 'outlined';
   icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
 interface AlertCardProps {
   title: string;
   description: string;
-  severity: 'HIGH' | 'MEDIUM';
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
   tags: { label: string; icon?: React.ReactNode }[];
   date: string;
   accentColor: string;
@@ -40,6 +41,12 @@ const AlertCard = ({ title, description, severity, tags, date, accentColor, acti
               <Chip
                 label={`${severity} SEVERITY`}
                 size="small"
+                sx={{
+                  bgcolor: `${accentColor}20`,
+                  color: accentColor,
+                  fontWeight: 'bold',
+                  border: `1px solid ${accentColor}50`
+                }}
               />
               {tags.map((tag, index) => (
                 <Chip
@@ -65,6 +72,7 @@ const AlertCard = ({ title, description, severity, tags, date, accentColor, acti
               size="small"
               variant={action.variant}
               startIcon={action.icon}
+              onClick={action.onClick}
               sx={{
                 minWidth: 100, fontSize: '11px', textTransform: 'none',
                 ...(action.variant === 'contained' && { bgcolor: '#00dc82', color: '#020617', '&:hover': { bgcolor: '#00bb6d' } }),
@@ -76,7 +84,7 @@ const AlertCard = ({ title, description, severity, tags, date, accentColor, acti
           ))}
         </Box>
       </Grid>
-    </Grid>Detection
+    </Grid>
   </Paper>
 );
 

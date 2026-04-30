@@ -19,6 +19,7 @@ export interface DetectionRule {
   title: string;
   description: string;
   isActive: boolean;
+  threshold?: number;
 }
 
 export const anomalyService = {
@@ -34,6 +35,13 @@ export const anomalyService = {
     return apiClient<void>(`/anomalies/rules/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ isActive })
+    });
+  },
+  
+  updateRuleParameters: async (id: string, parameters: { threshold?: number }): Promise<void> => {
+    return apiClient<void>(`/anomalies/rules/${id}/parameters`, {
+      method: 'PUT',
+      body: JSON.stringify(parameters)
     });
   },
 

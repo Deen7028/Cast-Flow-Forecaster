@@ -7,6 +7,7 @@ public interface IAnomalyService
     IEnumerable<AnomalyAlertDto> GetAlerts();
     IEnumerable<DetectionRuleDto> GetRules();
     bool ToggleRule(string id, bool isActive);
+    bool UpdateRuleParameters(string id, UpdateRuleParametersDto dto);
     bool MarkAsReviewed(int id);
     void RunDetection();
 }

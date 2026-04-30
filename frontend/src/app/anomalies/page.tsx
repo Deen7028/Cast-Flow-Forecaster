@@ -8,6 +8,7 @@ import { Add, Lightbulb, Settings, History } from '@mui/icons-material';
 import StatsCard from '@/components/anomalies/StatsCard';
 import AlertCard from '@/components/anomalies/AlertCard';
 import RuleSwitch from '@/components/anomalies/RuleSwitch';
+import RuleSettingsModal from '@/components/anomalies/RuleSettingsModal';
 import CheckIcon from '@mui/icons-material/Check';
 
 import { anomalyService, AnomalyAlert, DetectionRule } from '@/services/anomaly.service';
@@ -22,6 +23,10 @@ export default function AnomaliesPage() {
   const [isDetecting, setIsDetecting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  
+  // Settings Modal State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<DetectionRule | null>(null);
 
   const fetchData = async () => {
     try {
@@ -43,7 +48,12 @@ export default function AnomaliesPage() {
   };
 
   useEffect(() => {
-    fetchData();
+    const init = async () => {
+      await fetchData();
+      // Auto-run detection in background on load
+      handleRunDetection();
+    };
+    init();
   }, []);
 
   const handleToggleRule = async (id: string, newStatus: boolean) => {
@@ -70,6 +80,22 @@ export default function AnomaliesPage() {
 
   const handleViewTransaction = (txId: number) => {
     router.push(`/transactions?highlight=${txId}`);
+  };
+
+  const handleEditRule = (rule: DetectionRule) => {
+    setSelectedRule(rule);
+    setIsSettingsOpen(true);
+  };
+
+  const handleSaveRuleParameters = async (id: string, params: { threshold?: number }) => {
+    try {
+      await anomalyService.updateRuleParameters(id, params);
+      setSuccessMsg("Rule settings updated successfully");
+      await fetchData(); // Refresh data to get new descriptions
+    } catch (error) {
+      console.error("Failed to save rule parameters", error);
+      setErrorMsg("Failed to save rule settings.");
+    }
   };
 
   const handleRunDetection = async () => {
@@ -105,21 +131,21 @@ export default function AnomaliesPage() {
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button 
             variant="contained" 
-            startIcon={isDetecting ? <CircularProgress size={16} sx={{ color: '#020617' }} /> : <History />} 
+            startIcon={<Add />} 
+            size="small"
+            sx={{ bgcolor: '#1e293b', color: '#94a3b8', textTransform: 'none', fontSize: '11px', border: '1px solid #334155', '&:hover': { bgcolor: '#334155' } }}
+          >
+            Add Rule
+          </Button>
+          <Button 
+            variant="outlined" 
+            startIcon={isDetecting ? <CircularProgress size={16} sx={{ color: '#94a3b8' }} /> : <History />} 
             size="small"
             onClick={handleRunDetection}
             disabled={isDetecting}
-            sx={{ bgcolor: '#1e293b', color: '#94a3b8', textTransform: 'none', fontSize: '11px', border: '1px solid #334155' }}
+            sx={{ borderColor: '#334155', color: '#94a3b8', textTransform: 'none', fontSize: '11px', '&:hover': { borderColor: '#475569' } }}
           >
-            {isDetecting ? "Detecting..." : "Run Detection"}
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<Add />} 
-            size="small"
-            sx={{ bgcolor: '#1e293b', color: '#94a3b8', textTransform: 'none', fontSize: '11px', border: '1px solid #334155' }}
-          >
-            Add Rule
+            {isDetecting ? "Detecting..." : "Scan Now"}
           </Button>
         </Box>
       </Box>
@@ -136,13 +162,23 @@ export default function AnomaliesPage() {
           <StatsCard label="MEDIUM SEVERITY" value={alerts.filter(a => a.severity === 'MEDIUM').length} description="Review suggested" borderColor="#f59e0b" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Paper elevation={0} sx={{ bgcolor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b', p: 3, height: '100%' }}>
+          <Paper elevation={0} sx={{ bgcolor: '#0f172a', borderRadius: '8px', border: '1px solid #1e293b', p: 3, height: '100%', position: 'relative', overflow: 'hidden' }}>
             <Typography variant="caption" sx={{ color: '#64748b' }}>SYSTEM STATUS</Typography>
-            <Typography variant="h4"  sx={{ color: '#00dc82', mt: 1, fontWeight:"bold" }}>Active</Typography>
-            <Typography variant="caption" sx={{ color: '#64748b' }}>Monitoring Cash Flow</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
+               <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: isDetecting ? '#f59e0b' : '#00dc82', boxShadow: isDetecting ? '0 0 10px #f59e0b' : '0 0 10px #00dc82' }} />
+               <Typography variant="h5"  sx={{ color: isDetecting ? '#f59e0b' : '#00dc82', fontWeight:"bold" }}>{isDetecting ? "Analyzing..." : "Live"}</Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#64748b' }}>{isDetecting ? "Processing data..." : "Monitoring Cash Flow"}</Typography>
+            {isDetecting && <Box sx={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '2px', bgcolor: '#f59e0b', animation: 'scan 2s infinite linear' }} />}
           </Paper>
         </Grid>
       </Grid>
+      <style jsx global>{`
+        @keyframes scan {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
 
       {/* 3. Alerts List */}
       <Box sx={{ mb: 5 }}>
@@ -197,9 +233,18 @@ export default function AnomaliesPage() {
             description={rule.description} 
             checked={rule.isActive}
             onChange={(newVal) => handleToggleRule(rule.id, newVal)}
+            onEdit={() => handleEditRule(rule)}
           />
         ))}
       </Paper>
+
+      {/* 5. Modals */}
+      <RuleSettingsModal 
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        rule={selectedRule}
+        onSave={handleSaveRuleParameters}
+      />
       
       <Snackbar 
         open={!!errorMsg} 

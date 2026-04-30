@@ -40,6 +40,17 @@ public class AnomaliesController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("rules/{id}/parameters")]
+    public IActionResult UpdateRuleParameters(string id, [FromBody] UpdateRuleParametersDto dto)
+    {
+        var success = _anomalyService.UpdateRuleParameters(id, dto);
+        if (!success)
+        {
+            return NotFound(new { message = "Rule not found" });
+        }
+        return NoContent();
+    }
+
     [HttpPost("alerts/{id}/review")]
     public IActionResult MarkAsReviewed(int id)
     {

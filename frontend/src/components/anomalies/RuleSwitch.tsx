@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Switch, styled, CircularProgress } from '@mui/material';
+import { Box, Typography, Switch, styled, CircularProgress, IconButton } from '@mui/material';
+import { Settings } from '@mui/icons-material';
 
 const NeonSwitch = styled(Switch)(({ theme }) => ({
   '& .MuiSwitch-switchBase.Mui-checked': {
@@ -20,9 +21,10 @@ interface RuleSwitchProps {
   description: string;
   checked?: boolean;
   onChange?: (newVal: boolean) => Promise<void>;
+  onEdit?: () => void;
 }
 
-const RuleSwitch = ({ title, description, checked = false, onChange }: RuleSwitchProps) => {
+const RuleSwitch = ({ title, description, checked = false, onChange, onEdit }: RuleSwitchProps) => {
   const [isChecked, setIsChecked] = useState(checked);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -64,6 +66,17 @@ const RuleSwitch = ({ title, description, checked = false, onChange }: RuleSwitc
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {isUpdating && <CircularProgress size={16} sx={{ color: '#00dc82' }} />}
+        
+        {onEdit && (
+          <IconButton 
+            size="small" 
+            onClick={onEdit} 
+            sx={{ color: '#94a3b8', '&:hover': { color: '#00dc82', bgcolor: '#1e293b' } }}
+          >
+            <Settings sx={{ fontSize: 18 }} />
+          </IconButton>
+        )}
+
         <NeonSwitch 
           size="small" 
           checked={isChecked} 

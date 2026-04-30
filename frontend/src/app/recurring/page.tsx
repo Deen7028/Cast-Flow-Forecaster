@@ -4,7 +4,7 @@ import React from 'react';
 import {
   Box, Typography, Button, Stack, Tab, Tabs, Grid, CircularProgress,
   Checkbox, MenuItem, Select, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Dialog, Chip, TextField, IconButton
+  TableHead, TableRow, Paper, Dialog, Chip, TextField, IconButton, Pagination
 } from '@mui/material';
 import { Add, MoreHoriz as MoreHorizIcon, History as HistoryIcon } from '@mui/icons-material';
 import dayjs from 'dayjs';
@@ -52,6 +52,8 @@ export default function RecurringPage() {
     sTypeFilter,
     setSTypeFilter,
     fetchRules,
+    nTotalPages,
+    lstPagedRules,
   } = useRecurringRules();
 
   return (
@@ -149,7 +151,7 @@ export default function RecurringPage() {
         ) : filteredRules.length === 0 ? (
           <Typography sx={{ color: 'text.secondary', textAlign: "center" }} >No recurring rules found matching filters.</Typography>
         ) : (
-          filteredRules
+          lstPagedRules
             .sort((a, b) => {
               const dateA = getEffectiveNextRun(a);
               const dateB = getEffectiveNextRun(b);
@@ -180,6 +182,21 @@ export default function RecurringPage() {
             ))
         )}
 
+        {filteredRules.length > 0 && (
+          <Box sx={{ p: 1.5, mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="caption" color="text.secondary">
+              Showing {lstPagedRules.length} of {filteredRules.length} records
+            </Typography>
+            <Pagination
+              count={nTotalPages}
+              page={nPage}
+              onChange={(_, val) => setNPage(val)}
+              shape="rounded"
+              size="small"
+              color="primary"
+            />
+          </Box>
+        )}
       </Box>
 
       <RecurRuleForm

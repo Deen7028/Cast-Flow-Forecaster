@@ -37,11 +37,22 @@ public class AnomalyService : IAnomalyService
     public IEnumerable<DetectionRuleDto> GetRules()
     {
         var settings = _context.tmSystemSettings.FirstOrDefault();
-        
+
         return new List<DetectionRuleDto>
         {
-            new DetectionRuleDto { Id = "rule_spike", Title = "Expense Spike Detection", Description = $"แจ้งเตือนเมื่อรายจ่ายสูงกว่าค่าเฉลี่ย {settings?.nSpikeThreshold ?? 2.5m} เท่า", IsActive = settings?.isEnableSpike ?? true },
-            new DetectionRuleDto { Id = "rule_fixed", Title = "Missing Fixed Cost Alert", Description = "ตรวจสอบ Recurring Rules หากไม่พบรายการบันทึกตามกำหนด", IsActive = settings?.isCheckFixedCost ?? true }
+            new DetectionRuleDto {
+                Id = "rule_spike",
+                Title = "Expense Spike Detection",
+                Description = $"แจ้งเตือนเมื่อรายจ่ายสูงกว่าค่าเฉลี่ย {settings?.nSpikeThreshold ?? 2.5m} เท่า",
+                IsActive = settings?.isEnableSpike ?? true,
+                Threshold = settings?.nSpikeThreshold ?? 2.5m
+            },
+            new DetectionRuleDto {
+                Id = "rule_fixed",
+                Title = "Missing Fixed Cost Alert",
+                Description = "ตรวจสอบ Recurring Rules หากไม่พบรายการบันทึกตามกำหนด",
+                IsActive = settings?.isCheckFixedCost ?? true
+            }
         };
     }
 
@@ -60,9 +71,29 @@ public class AnomalyService : IAnomalyService
         return true;
     }
 
+    public bool UpdateRuleParameters(string id, UpdateRuleParametersDto dto)
+    {
+        var settings = _context.tmSystemSettings.FirstOrDefault();
+        if (settings == null) return false;
+
+        switch (id)
+        {
+            case "rule_spike":
+                if (dto.Threshold.HasValue)
+                {
+                    settings.nSpikeThreshold = dto.Threshold.Value;
+                }
+                break;
+                // เพิ่ม Rule อื่นๆ ที่นี่ในอนาคต
+        }
+
+        _context.SaveChanges();
+        return true;
+    }
+
     public bool MarkAsReviewed(int id)
     {
-        var anomaly =  _context.tbAnomalies.Find(id);
+        var anomaly = _context.tbAnomalies.Find(id);
         if (anomaly == null) return false;
 
         anomaly.isReviewed = true;
@@ -72,7 +103,7 @@ public class AnomalyService : IAnomalyService
 
     public void RunDetection()
     {
-        var settings =  _context.tmSystemSettings.FirstOrDefault();
+        var settings = _context.tmSystemSettings.FirstOrDefault();
         if (settings == null) return;
 
         // 1. Expense Spike Detection
@@ -125,7 +156,7 @@ public class AnomalyService : IAnomalyService
                 var exists = _context.tbTransactions
                     .Any(t => t.isActive == true && t.nRecurringRuleId == rule.nRecurringRulesId && t.dTransactionDate >= startOfMonth);
 
-                if (!exists && DateTime.UtcNow.Day > 10) 
+                if (!exists && DateTime.UtcNow.Day > 10)
                 {
                     var title = $"Missing Fixed Cost: {rule.sName}";
                     if (!_context.tbAnomalies.Any(a => a.sTitle == title && a.dDetectedAt >= startOfMonth))

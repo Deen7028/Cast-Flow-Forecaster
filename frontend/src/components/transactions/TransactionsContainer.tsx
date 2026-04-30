@@ -481,6 +481,7 @@ export const TransactionsContainer = () => {
                 onSaved={() => {
                     notify(objSelectedTx ? 'อัปเดตข้อมูลสำเร็จ' : 'เพิ่มข้อมูลสำเร็จ');
                     fetchTransactions();
+                    window.dispatchEvent(new CustomEvent('refreshAnomalyCount'));
                 }}
                 objEditData={objSelectedTx ? objSelectedTx._raw : null}
             />

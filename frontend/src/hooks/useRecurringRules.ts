@@ -41,6 +41,10 @@ export const useRecurringRules = () => {
         return statusMatch && typeMatch;
     });
 
+    useEffect(() => {
+        setNPage(1);
+    }, [sStatusFilter, sTypeFilter]);
+
     const formatAmount = useCallback((amount: number) => {
         return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount);
     }, []);
@@ -169,6 +173,10 @@ export const useRecurringRules = () => {
         setSelectedIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
     }, []);
 
+    const nPageSize = 5;
+    const nTotalPages = Math.ceil(filteredRules.length / nPageSize);
+    const lstPagedRules = filteredRules.slice((nPage - 1) * nPageSize, nPage * nPageSize);
+
     return {
         rules,
         loading,
@@ -205,5 +213,7 @@ export const useRecurringRules = () => {
         handleBulkDelete,
         handleSelectAll,
         handleSelectRow,
+        nTotalPages,
+        lstPagedRules,
     };
 };

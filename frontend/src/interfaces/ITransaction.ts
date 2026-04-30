@@ -41,6 +41,7 @@ export interface ICategory {
     nCategoriesId: number;
     sName: string;
     sType: string;
+    isActive: boolean;
 }
 
 export interface IApiResponse<T = unknown> {

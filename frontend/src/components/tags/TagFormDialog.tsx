@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Switch, Box, Grid } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Switch, Box } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+
 import { useForm, Controller } from 'react-hook-form';
 import { ITag, IApiResponse } from '@/interfaces';
 import { tagService } from '@/services/tag.service';
@@ -15,6 +17,7 @@ interface ITagFormDialogProps {
 
 export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFormDialogProps) => {
     const [isLoading, setIsLoading] = useState(false);
+    const [lstExistingTags, setLstExistingTags] = useState<ITag[]>([]);
 
     const { notify, NotificationComponent } = useNotification();
 
@@ -48,6 +51,21 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
         }
     }, [objEditData, isOpen, reset]);
 
+    // Fetch existing tags for uniqueness validation
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                const objResult = await tagService.getAll() as IApiResponse<ITag[]>;
+                if (objResult.status === 'success') {
+                    setLstExistingTags(objResult.data || []);
+                }
+            } catch (objError) {
+                console.error('Failed to fetch existing tags', objError);
+            }
+        };
+        if (isOpen) fetchTags();
+    }, [isOpen]);
+
     const handleSave = async (data: ITag) => {
         setIsLoading(true);
         try {
@@ -77,7 +95,16 @@ export const TagFormDialog = ({ isOpen, onClose, onSaved, objEditData }: ITagFor
                         <Controller
                             name="sName"
                             control={control}
-                            rules={{ required: 'กรุณากรอกชื่อ Tag' }}
+                            rules={{ 
+                                required: 'กรุณากรอกชื่อ Tag',
+                                validate: (sValue: string) => {
+                                    const isDuplicate = lstExistingTags.some(t => 
+                                        t.sName.trim().toLowerCase() === sValue.trim().toLowerCase() && 
+                                        t.nTagsId !== objEditData?.nTagsId
+                                    );
+                                    return isDuplicate ? 'ชื่อ Tag นี้มีอยู่แล้วในระบบ' : true;
+                                }
+                            }}
                             render={({ field, fieldState }) => (
                                 <TextField 
                                     {...field}

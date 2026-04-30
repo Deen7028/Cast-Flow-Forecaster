@@ -1,8 +1,10 @@
 "use client";
 
 import React from 'react';
-import { Box, Typography, Paper, Button, Stack ,Grid } from '@mui/material';
-import { Add, Lightbulb, Settings, History } from '@mui/icons-material';
+import { Box, Typography, Paper, Button } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+
+import { Add, Lightbulb, Settings } from '@mui/icons-material';
 
 // Import Components ที่เราแยกไว้
 import StatsCard from '@/components/anomalies/StatsCard';

@@ -3,8 +3,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Typography, Button, TextField, Select, MenuItem, InputAdornment,
     Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Checkbox, Chip, IconButton, Pagination, Grid
+    Checkbox, Chip, IconButton, Pagination,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -113,6 +115,23 @@ export const TransactionsContainer = () => {
         };
         fetchTags();
     }, [fetchTransactions]);
+    
+    // Get unique tags by name for the filter dropdown
+    const lstUniqueTags = useMemo(() => {
+        const lstUnique: ITag[] = [];
+        const setNames = new Set<string>();
+        
+        // Only show active tags in the filter dropdown (Support 0/1, "0"/"1", and true/false)
+        const lstFiltered = lstTags.filter(t => Number(t.isActive) === 1 || t.isActive === true);
+
+        lstFiltered.forEach(t => {
+            if (t.sName && !setNames.has(t.sName.trim().toLowerCase())) {
+                setNames.add(t.sName.trim().toLowerCase());
+                lstUnique.push(t);
+            }
+        });
+        return lstUnique;
+    }, [lstTags]);
 
     // 1. Filtering Logic
     const lstFilteredTransactions = useMemo(() => {
@@ -256,17 +275,17 @@ export const TransactionsContainer = () => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* 1. Toolbar */}
-                <Grid container spacing={1.5} sx={{ alignItems: 'center', width: '100%' }}>
-                    <Grid size={{ xs: 12, md: 'grow' }}>
-                        <TextField
-                            size="small"
-                            fullWidth
-                            placeholder="ค้นหา..."
-                            value={sSearch}
-                            onChange={(e) => { setSSearch(e.target.value); setNPage(1); }}
-                            slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
-                            sx={{ bgcolor: 'background.paper', borderRadius: 1 }}
-                        />
+            <Grid container spacing={1.5} sx={{ alignItems: 'center', width: '100%' }}>
+                <Grid size={{ xs: 12, md: 'grow' }}>
+                    <TextField
+                        size="small"
+                        fullWidth
+                        placeholder="ค้นหา..."
+                        value={sSearch}
+                        onChange={(e) => { setSSearch(e.target.value); setNPage(1); }}
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
+                        sx={{ bgcolor: 'background.paper', borderRadius: 1 }}
+                    />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 'auto' }}>
                         <TextField
@@ -341,12 +360,12 @@ export const TransactionsContainer = () => {
                         <Select
                             size="small"
                             fullWidth
-                            value={lstTags.some(t => t.sName === sTagFilter) || sTagFilter === 'all' ? sTagFilter : 'all'}
+                            value={lstUniqueTags.some(t => t.sName === sTagFilter) || sTagFilter === 'all' ? sTagFilter : 'all'}
                             onChange={e => { setSTagFilter(e.target.value as string); setNPage(1); }}
                             sx={{ minWidth: 100, bgcolor: 'background.paper' }}
                         >
                             <MenuItem value="all">All Tags</MenuItem>
-                            {lstTags.map(tag => (
+                            {lstUniqueTags.map(tag => (
                                 <MenuItem key={tag.nTagsId} value={tag.sName}>{tag.sName}</MenuItem>
                             ))}
                         </Select>
@@ -367,7 +386,7 @@ export const TransactionsContainer = () => {
                     { label: 'Filtered Expenses', value: `-฿${objFilteredStats.nTotalExpense.toLocaleString()}`, sub: 'Current view', valColor: 'error.main' },
                     { label: 'Filtered Net', value: `${objFilteredStats.nNet >= 0 ? '+' : ''}฿${objFilteredStats.nNet.toLocaleString()}`, sub: 'Current view', valColor: 'secondary.main' }
                 ].map((stat, idx) => (
-                    <Grid key={idx} size={{ xs: 6, md: 3 }}>
+                    <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
                         <Paper sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                             <Typography variant="caption" color="text.secondary">{stat.label}</Typography>
                             <Typography sx={{ fontFamily: 'monospace', fontSize: 20, fontWeight: 500, color: stat.valColor, mt: 0.5 }}>{stat.value}</Typography>

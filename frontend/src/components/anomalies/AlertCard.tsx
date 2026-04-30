@@ -1,7 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Box, Typography, Paper, Chip, Stack, Button, Grid } from '@mui/material';
+import { Box, Typography, Paper, Chip, Button } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+
 
 interface ActionButton {
   label: string;

@@ -1,10 +1,13 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+
 import SyncIcon from '@mui/icons-material/Sync';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
-    Button, TextField, Box, Select, MenuItem, InputLabel, FormControl, Typography, Grid
+    Button, TextField, Box, Select, MenuItem, InputLabel, FormControl, Typography
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { ITag, ITransaction, ITransactionForm, ICategory, IApiResponse, IRecurringRule } from '@/interfaces';
 import { TransactionStatus } from '@/enum';
@@ -59,7 +62,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                     transactionService.getCategories() as Promise<IApiResponse<ICategory[]>>,
                     transactionService.getRecurringRules() as Promise<IApiResponse<IRecurringRule[]>>
                 ]);
- 
+
                 if (objResTags.status === 'success') {
                     setLstTags(objResTags.data || []);
                 }
@@ -75,6 +78,46 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
         };
         if (isOpen) fetchData();
     }, [isOpen]);
+
+    // Get unique categories by name and type
+    const lstUniqueCategories = useMemo(() => {
+        const lstUnique: ICategory[] = [];
+        const setKeys = new Set<string>();
+
+        // Filter active or selected categories first (Support 0/1, "0"/"1", and true/false)
+        const lstFiltered = lstCategories.filter(c => c.isActive !== false || c.nCategoriesId === objEditData?.nCategoryId);
+
+        lstFiltered.forEach(c => {
+            if (c.sName) {
+                const sKey = `${c.sName.trim().toLowerCase()}_${(c.sType || '').trim().toLowerCase()}`;
+                if (!setKeys.has(sKey)) {
+                    setKeys.add(sKey);
+                    lstUnique.push(c);
+                }
+            }
+        });
+        return lstUnique;
+    }, [lstCategories, objEditData]);
+
+    // Get unique tags by name
+    const lstUniqueTags = useMemo(() => {
+        const lstUnique: ITag[] = [];
+        const setNames = new Set<string>();
+
+        // Filter active or selected tags first (Support 0/1, "0"/"1", and true/false)
+        const lstFiltered = lstTags.filter(t =>
+            (Number(t.isActive) === 1 || t.isActive === true) ||
+            t.nTagsId === objEditData?.nTagsId
+        );
+
+        lstFiltered.forEach(t => {
+            if (t.sName && !setNames.has(t.sName.trim().toLowerCase())) {
+                setNames.add(t.sName.trim().toLowerCase());
+                lstUnique.push(t);
+            }
+        });
+        return lstUnique;
+    }, [lstTags, objEditData]);
 
     // จัดการข้อมูลเมื่อเปิด Form (โหมด Create / Edit)
     useEffect(() => {
@@ -292,8 +335,8 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                                         <Select
                                             {...field}
                                             value={
-                                                lstCategories
-                                                    .filter(c => c.sType?.toUpperCase() === sType?.toUpperCase())
+                                                lstUniqueCategories
+                                                    .filter(c => !sType || !c.sType || (c.sType || '').toUpperCase() === (sType || '').toUpperCase())
                                                     .some(c => c.nCategoriesId === field.value)
                                                     ? field.value
                                                     : ''
@@ -310,22 +353,20 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                                                     setIsCategoryDialogOpen(true);
                                                 } else {
                                                     field.onChange(val);
-                                                    // Auto-set sType if it's empty
-                                                    if (typeof val === 'number' && !sType) {
-                                                        const selectedCat = lstCategories.find(c => c.nCategoriesId === val);
-                                                        if (selectedCat) {
-                                                            setValue('sType', selectedCat.sType?.toUpperCase() || 'EXPENSE');
-                                                        }
+                                                    // Sync sType with the selected category
+                                                    const selectedCat = lstCategories.find(c => c.nCategoriesId === val);
+                                                    if (selectedCat && selectedCat.sType) {
+                                                        setValue('sType', selectedCat.sType.toUpperCase());
                                                     }
                                                 }
                                             }}
                                         >
                                             <MenuItem value="" disabled><em>เลือกหมวดหมู่</em></MenuItem>
-                                            {lstCategories
-                                                .filter(c => !sType || c.sType?.toUpperCase() === sType?.toUpperCase())
+                                            {lstUniqueCategories
+                                                .filter(c => !sType || !c.sType || (c.sType || '').toUpperCase() === (sType || '').toUpperCase())
                                                 .map((cat) => (
                                                     <MenuItem key={cat.nCategoriesId} value={cat.nCategoriesId}>
-                                                        {cat.sName} {!sType && `(${cat.sType})`}
+                                                        {cat.sName} {(!sType || !cat.sType) && cat.sType && `(${cat.sType})`}
                                                     </MenuItem>
                                                 ))
                                             }
@@ -355,7 +396,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                                     <Select
                                         {...field}
                                         value={
-                                            lstTags.some(t => t.nTagsId === field.value)
+                                            lstUniqueTags.some(t => t.nTagsId === field.value)
                                                 ? field.value
                                                 : ''
                                         }
@@ -370,7 +411,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
                                         }}
                                     >
                                         <MenuItem value="" disabled><em>Select Tag</em></MenuItem>
-                                        {Array.from(new Map(lstTags.map(item => [item.nTagsId, item])).values()).map((tag) => (
+                                        {lstUniqueTags.map((tag) => (
                                             <MenuItem key={tag.nTagsId} value={tag.nTagsId}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                     <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: tag.sColorCode }} />

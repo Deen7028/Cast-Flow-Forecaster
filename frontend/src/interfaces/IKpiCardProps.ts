@@ -1,5 +1,14 @@
 export interface IKpiCardProps {
     sTitle: string;
-    nValue: number;
-    isPositive: boolean;
+    sValue: string;
+    sValueColor: string;
+    sTopBorderColor: string;
+    sSubtextPrefix?: string;
+    sSubtextPrefixColor?: string;
+    sSubtextSuffix?: string;
+    sBottomLeftText: string;
+    nProgress?: number;
+    sProgressColor?: string;
+    sBottomRightText: string;
+    sBottomRightColor?: string;
 }

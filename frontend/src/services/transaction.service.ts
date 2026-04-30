@@ -26,7 +26,8 @@ export const transactionService = {
             ...data,
             nAmount: data.nAmount || 0,
             nTagId: data.nTagId || 0,
-            nCategoryId: data.nCategoryId || 0
+            nCategoryId: data.nCategoryId || 0,
+            nRecurringRuleId: data.nRecurringRuleId || 0
         };
         return apiClient('/Transactions', {
             method: 'POST',

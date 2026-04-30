@@ -1,6 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem, InputLabel, FormControl, Box, Typography,Grid } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem, InputLabel, FormControl, Box, Typography, FormControlLabel, Switch } from '@mui/material';
+
+import Grid from '@mui/material/Grid2';
+
 import { useNotification } from '@/hooks/useNotification';
 import { useForm, Controller } from 'react-hook-form';
 import { ICategory, IApiResponse } from '@/interfaces';
@@ -20,19 +23,26 @@ export const CategoryFormDialog = ({ isOpen, onClose, onSaved, objEditData }: IC
         defaultValues: {
             nCategoriesId: 0,
             sName: '',
-            sType: ''
+            sType: '',
+            isActive: true
         }
     });
 
     useEffect(() => {
         if (isOpen) {
             if (objEditData) {
-                reset(objEditData);
+                reset({
+                    nCategoriesId: objEditData.nCategoriesId || 0,
+                    sName: objEditData.sName || '',
+                    sType: objEditData.sType || '',
+                    isActive: objEditData.isActive ?? true
+                });
             } else {
                 reset({
                     nCategoriesId: 0,
                     sName: '',
-                    sType: ''
+                    sType: '',
+                    isActive: true
                 });
             }
         }
@@ -114,6 +124,18 @@ export const CategoryFormDialog = ({ isOpen, onClose, onSaved, objEditData }: IC
                                     )}
                                 />
                             </FormControl>
+                        </Grid>
+                        <Grid size={12}>
+                            <Controller
+                                name="isActive"
+                                control={control}
+                                render={({ field }) => (
+                                    <FormControlLabel
+                                        control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />}
+                                        label="Active Status"
+                                    />
+                                )}
+                            />
                         </Grid>
                     </Grid>
                 </DialogContent>

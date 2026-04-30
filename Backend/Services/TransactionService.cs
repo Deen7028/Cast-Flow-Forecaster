@@ -9,10 +9,12 @@ namespace Backend.Services
     public class TransactionService : ITransactionService
     {
         private readonly WebAppDbContext _objContext;
+        private readonly IAnomalyService _anomalyService;
 
-        public TransactionService(WebAppDbContext objContext)
+        public TransactionService(WebAppDbContext objContext, IAnomalyService anomalyService)
         {
             _objContext = objContext;
+            _anomalyService = anomalyService;
         }
 
         public object GetTransactions()
@@ -108,9 +110,10 @@ namespace Backend.Services
 
         public object SaveTransaction(TransactionInputDto req)
         {
+            tbTransactions? objTarget = null;
             if (req.nTransactionsId == 0)
             {
-                var objNew = new tbTransactions
+                objTarget = new tbTransactions
                 {
                     sDescription = req.sDescription,
                     nAmount = req.nAmount,
@@ -126,40 +129,52 @@ namespace Backend.Services
                 if (req.nTagId > 0)
                 {
                     var objTag = _objContext.tmTags.Find(req.nTagId);
-                    if (objTag != null) objNew.nTag.Add(objTag);
+                    if (objTag != null) objTarget.nTag.Add(objTag);
                 }
 
-                _objContext.tbTransactions.Add(objNew);
+                _objContext.tbTransactions.Add(objTarget);
             }
             else
             {
                 // เคสแก้ไข
-                var objEdit = _objContext.tbTransactions
+                objTarget = _objContext.tbTransactions
                     .Include(x => x.nTag)
                     .FirstOrDefault(x => x.nTransactionsId == req.nTransactionsId);
 
-                if (objEdit == null) throw new Exception("ไม่พบรายการ");
+                if (objTarget == null) throw new Exception("ไม่พบรายการ");
 
-                objEdit.sDescription = req.sDescription;
-                objEdit.nAmount = req.nAmount;
-                objEdit.sType = req.sType;
-                objEdit.dTransactionDate = req.dDate;
-                objEdit.sStatus = req.sStatus;
-                if (req.nCategoryId > 0) objEdit.nCategoryId = req.nCategoryId;
-                objEdit.isActive = true;
-                objEdit.nRecurringRuleId = req.nRecurringRuleId > 0 ? req.nRecurringRuleId : null;
+                objTarget.sDescription = req.sDescription;
+                objTarget.nAmount = req.nAmount;
+                objTarget.sType = req.sType;
+                objTarget.dTransactionDate = req.dDate;
+                objTarget.sStatus = req.sStatus;
+                if (req.nCategoryId > 0) objTarget.nCategoryId = req.nCategoryId;
+                objTarget.isActive = true;
+                objTarget.nRecurringRuleId = req.nRecurringRuleId > 0 ? req.nRecurringRuleId : null;
 
                 // อัปเดต Tag
-                objEdit.nTag.Clear();
+                objTarget.nTag.Clear();
                 if (req.nTagId > 0)
                 {
                     var objTag = _objContext.tmTags.Find(req.nTagId);
-                    if (objTag != null) objEdit.nTag.Add(objTag);
+                    if (objTag != null) objTarget.nTag.Add(objTag);
                 }
             }
 
             _objContext.SaveChanges();
-            return new { status = "success", message = "บันทึกธุรกรรมเรียบร้อย" };
+            
+            // Trigger anomaly detection immediately
+            _anomalyService.RunDetection();
+
+            // Check if THIS transaction was flagged
+            _objContext.Entry(objTarget!).Reload();
+            var isFlagged = objTarget!.isAnomaly == true;
+
+            return new { 
+                status = "success", 
+                message = isFlagged ? "บันทึกเรียบร้อย (ตรวจพบความผิดปกติ กรุณาตรวจสอบในหน้า Alerts)" : "บันทึกธุรกรรมเรียบร้อย",
+                isAnomaly = isFlagged
+            };
         }
 
         public object DeleteTransaction(int nTransactionsId)

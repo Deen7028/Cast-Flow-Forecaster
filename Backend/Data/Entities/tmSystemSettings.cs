@@ -20,6 +20,7 @@ public partial class tmSystemSettings
     public decimal? nSpikeThreshold { get; set; }
 
     public bool? isCheckFixedCost { get; set; }
+    public int? nFixedCostAlertDay { get; set; }
 
     public int? nForecastHorizonDays { get; set; }
 

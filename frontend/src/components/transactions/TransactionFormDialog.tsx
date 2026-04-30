@@ -18,7 +18,7 @@ import { useNotification } from '@/hooks/useNotification';
 interface ITransactionFormDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSaved: () => void;
+    onSaved: (response?: any) => void;
     objEditData: ITransaction | null;
 }
 
@@ -113,7 +113,7 @@ export const TransactionFormDialog = ({ isOpen, onClose, onSaved, objEditData }:
             const objResult = await transactionService.save(data) as IApiResponse;
 
             if (objResult.status === 'success') {
-                onSaved();
+                onSaved(objResult);
                 onClose();
             } else {
                 notify(objResult.message || 'บันทึกไม่สำเร็จ', 'error');

@@ -10,6 +10,8 @@ import AlertCard from '@/components/anomalies/AlertCard';
 import RuleSwitch from '@/components/anomalies/RuleSwitch';
 import RuleSettingsModal from '@/components/anomalies/RuleSettingsModal';
 import CheckIcon from '@mui/icons-material/Check';
+import { TransactionFormDialog } from '@/components/transactions/TransactionFormDialog';
+import { ITransaction } from '@/interfaces';
 
 import { anomalyService, AnomalyAlert, DetectionRule } from '@/services/anomaly.service';
 
@@ -27,6 +29,11 @@ export default function AnomaliesPage() {
   // Settings Modal State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedRule, setSelectedRule] = useState<DetectionRule | null>(null);
+
+  // Transaction Form State
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [prefilledData, setPrefilledData] = useState<ITransaction | null>(null);
+  const [activeAlertId, setActiveAlertId] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -82,12 +89,43 @@ export default function AnomaliesPage() {
     router.push(`/transactions?highlight=${txId}`);
   };
 
+  const handleRecordNow = (alert: AnomalyAlert) => {
+    // สร้างข้อมูล Transaction จำลองเพื่อใช้ในการเปิด Form
+    const mockTx: ITransaction = {
+      nTransactionsId: 0,
+      sDescription: alert.title.replace("Missing Fixed Cost: ", ""),
+      nAmount: alert.suggestedAmount || 0,
+      sType: "Expense",
+      dDate: new Date().toISOString().split('T')[0],
+      nCategoryId: alert.suggestedCategoryId || 1,
+      nRecurringRuleId: alert.recurringRuleId,
+      nTagsId: 0 // Default tag
+    };
+
+    setPrefilledData(mockTx);
+    setActiveAlertId(alert.id);
+    setIsFormOpen(true);
+  };
+
+  const handleTransactionSaved = async () => {
+    setIsFormOpen(false);
+    setSuccessMsg("Transaction recorded successfully!");
+    
+    // ถ้ามีการบันทึกสำเร็จ ให้ Mark alert นั้นว่า Reviewed เลย
+    if (activeAlertId) {
+      await handleMarkAsReviewed(activeAlertId);
+      setActiveAlertId(null);
+    }
+    
+    await fetchData();
+  };
+
   const handleEditRule = (rule: DetectionRule) => {
     setSelectedRule(rule);
     setIsSettingsOpen(true);
   };
 
-  const handleSaveRuleParameters = async (id: string, params: { threshold?: number }) => {
+  const handleSaveRuleParameters = async (id: string, params: { isActive?: boolean; threshold?: number; fixedCostAlertDay?: number }) => {
     try {
       await anomalyService.updateRuleParameters(id, params);
       setSuccessMsg("Rule settings updated successfully");
@@ -98,12 +136,13 @@ export default function AnomaliesPage() {
     }
   };
 
-  const handleRunDetection = async () => {
+  const handleRunDetection = async (force: boolean = false) => {
     try {
       setIsDetecting(true);
-      await anomalyService.triggerDetection();
+      await anomalyService.triggerDetection(force);
       await fetchData();
-      setSuccessMsg("Detection completed. New anomalies identified if any.");
+      if (force) setSuccessMsg("Scan completed. Reviewed anomalies have been re-evaluated.");
+      else setSuccessMsg("Detection completed. New anomalies identified if any.");
     } catch (error) {
       console.error("Failed to run detection", error);
       setErrorMsg("Failed to run detection process.");
@@ -141,7 +180,7 @@ export default function AnomaliesPage() {
             variant="outlined" 
             startIcon={isDetecting ? <CircularProgress size={16} sx={{ color: '#94a3b8' }} /> : <History />} 
             size="small"
-            onClick={handleRunDetection}
+            onClick={() => handleRunDetection(true)}
             disabled={isDetecting}
             sx={{ borderColor: '#334155', color: '#94a3b8', textTransform: 'none', fontSize: '11px', '&:hover': { borderColor: '#475569' } }}
           >
@@ -203,7 +242,7 @@ export default function AnomaliesPage() {
                   label: alert.severity === 'HIGH' ? "Record Now" : "View TX", 
                   variant: alert.severity === 'HIGH' ? 'contained' : 'outlined', 
                   icon: alert.severity === 'HIGH' ? <Add /> : undefined,
-                  onClick: alert.transactionId ? () => handleViewTransaction(alert.transactionId!) : undefined
+                  onClick: alert.severity === 'HIGH' ? () => handleRecordNow(alert) : (alert.transactionId ? () => handleViewTransaction(alert.transactionId!) : undefined)
                 },
                 { 
                   label: alert.severity === 'HIGH' ? "Dismiss" : "Mark Reviewed", 
@@ -244,6 +283,13 @@ export default function AnomaliesPage() {
         onClose={() => setIsSettingsOpen(false)}
         rule={selectedRule}
         onSave={handleSaveRuleParameters}
+      />
+
+      <TransactionFormDialog 
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        onSaved={handleTransactionSaved}
+        objEditData={prefilledData}
       />
       
       <Snackbar 

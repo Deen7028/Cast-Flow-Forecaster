@@ -13,7 +13,7 @@ export interface ITransaction {
     sRecurringRuleName?: string;
     nRecurringRuleId?: number;
     sTitleSub?: string;
-    
+    isAnomaly?: boolean;
 }
 
 export interface ITransactionForm {

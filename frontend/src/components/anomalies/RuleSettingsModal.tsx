@@ -11,16 +11,18 @@ interface RuleSettingsModalProps {
   open: boolean;
   onClose: () => void;
   rule: DetectionRule | null;
-  onSave: (id: string, parameters: { threshold?: number }) => Promise<void>;
+  onSave: (id: string, parameters: { threshold?: number, fixedCostAlertDay?: number }) => Promise<void>;
 }
 
 const RuleSettingsModal = ({ open, onClose, rule, onSave }: RuleSettingsModalProps) => {
   const [threshold, setThreshold] = useState<number>(2.5);
+  const [alertDay, setAlertDay] = useState<number>(10);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (rule && rule.threshold !== undefined) {
-      setThreshold(rule.threshold);
+    if (rule) {
+      if (rule.threshold !== undefined) setThreshold(rule.threshold);
+      if (rule.fixedCostAlertDay !== undefined) setAlertDay(rule.fixedCostAlertDay);
     }
   }, [rule, open]);
 
@@ -28,7 +30,10 @@ const RuleSettingsModal = ({ open, onClose, rule, onSave }: RuleSettingsModalPro
     if (!rule) return;
     setIsSaving(true);
     try {
-      await onSave(rule.id, { threshold });
+      await onSave(rule.id, { 
+        threshold: rule.id === 'rule_spike' ? threshold : undefined,
+        fixedCostAlertDay: rule.id === 'rule_fixed' ? alertDay : undefined
+      });
       onClose();
     } catch (error) {
       console.error("Failed to save rule settings", error);
@@ -100,10 +105,26 @@ const RuleSettingsModal = ({ open, onClose, rule, onSave }: RuleSettingsModalPro
         )}
 
         {rule.id === 'rule_fixed' && (
-          <Box>
-            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-              กฎนี้ใช้การตรวจสอบแบบมาตรฐาน (ตรวจสอบภายในวันที่ 10 ของเดือน) 
-              ยังไม่มีพารามิเตอร์ที่ปรับแต่งได้ในขณะนี้
+          <Box sx={{ px: 1 }}>
+            <Typography variant="subtitle2" sx={{ color: '#f8fafc', mb: 2 }}>
+              ระยะเวลาผ่อนผัน (แจ้งเตือนหลังจากวันครบกำหนดกี่วัน)
+            </Typography>
+            <Slider
+              value={alertDay}
+              min={0}
+              max={15}
+              step={1}
+              onChange={(_, val) => setAlertDay(val as number)}
+              valueLabelDisplay="auto"
+              sx={{ color: '#00dc82', mb: 2 }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+              <Typography variant="caption" sx={{ color: '#64748b' }}>ทันที (0 วัน)</Typography>
+              <Typography variant="h6" sx={{ color: '#00dc82', fontWeight: 'bold' }}>{alertDay} วัน</Typography>
+              <Typography variant="caption" sx={{ color: '#64748b' }}>15 วัน</Typography>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mt: -1 }}>
+              * ระบบจะเริ่มแจ้งเตือนหากไม่พบรายการบันทึกหลังจากวันครบกำหนดไปแล้วตามจำนวนวันที่ระบุ
             </Typography>
           </Box>
         )}

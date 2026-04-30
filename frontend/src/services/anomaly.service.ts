@@ -11,6 +11,9 @@ export interface AnomalyAlert {
   description: string;
   date: string;
   transactionId?: number;
+  suggestedAmount?: number;
+  suggestedCategoryId?: number;
+  recurringRuleId?: number;
   tags: AnomalyTag[];
 }
 
@@ -20,6 +23,7 @@ export interface DetectionRule {
   description: string;
   isActive: boolean;
   threshold?: number;
+  fixedCostAlertDay?: number;
 }
 
 export const anomalyService = {
@@ -51,8 +55,8 @@ export const anomalyService = {
     });
   },
 
-  triggerDetection: async (): Promise<void> => {
-    return apiClient<void>('/anomalies/detect', {
+  triggerDetection: async (force: boolean = false): Promise<void> => {
+    return apiClient<void>(`/anomalies/detect${force ? '?force=true' : ''}`, {
       method: 'POST'
     });
   }

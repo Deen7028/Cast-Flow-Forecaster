@@ -63,9 +63,9 @@ public class AnomaliesController : ControllerBase
     }
 
     [HttpPost("detect")]
-    public IActionResult TriggerDetection()
+    public IActionResult TriggerDetection([FromQuery] bool force = false)
     {
-        _anomalyService.RunDetection();
+        _anomalyService.RunDetection(force);
         return Ok(new { message = "Detection process completed" });
     }
 }

@@ -9,5 +9,5 @@ public interface IAnomalyService
     bool ToggleRule(string id, bool isActive);
     bool UpdateRuleParameters(string id, UpdateRuleParametersDto dto);
     bool MarkAsReviewed(int id);
-    void RunDetection();
+    void RunDetection(bool forceRedetect = false);
 }

@@ -1,9 +1,10 @@
 'use client';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
     Box, Typography, Button, TextField, Select, MenuItem, InputAdornment,
     Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-    Checkbox, Chip, IconButton, Pagination, Grid
+    Checkbox, Chip, IconButton, Pagination, Grid, GlobalStyles
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -36,10 +37,15 @@ interface ITransactionDisplay {
     sStatus: string;
     sStatusColor: string;
     sRecurringRuleName: string | null;
+    isAnomaly: boolean;
     _raw: ITransaction;
 }
 
 export const TransactionsContainer = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const highlightId = searchParams.get('highlight');
     const [sSearch, setSSearch] = useState('');
     const [lstTransactions, setLstTransactions] = useState<ITransactionDisplay[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -86,6 +92,7 @@ export const TransactionsContainer = () => {
                         sStatusColor: item.sStatus === "Completed" || item.sStatus === "Confirmed" ? "#00e5a0" : "#ffcc00",
                         _raw: item,
                         sRecurringRuleName: item.sRecurringRuleName || null,
+                        isAnomaly: item.isAnomaly || false
                     };
                 });
                 setLstTransactions(lstMapped);
@@ -431,24 +438,48 @@ export const TransactionsContainer = () => {
                                 ) : (
                                     lstPagedTransactions.map((objRow) => {
                                         const isItemSelected = lstSelectedIds.indexOf(objRow.nTransactionsId) !== -1;
+                                        const isHighlighted = highlightId === objRow.nTransactionsId.toString();
                                         return (
-                                            <TableRow key={objRow.nTransactionsId} hover selected={isItemSelected} sx={{ cursor: 'pointer' }} onClick={() => handleEdit(objRow)}>
+                                            <TableRow 
+                                                key={objRow.nTransactionsId} 
+                                                hover 
+                                                selected={isItemSelected} 
+                                                sx={{ 
+                                                    cursor: 'pointer',
+                                                    bgcolor: isHighlighted ? 'rgba(244, 63, 94, 0.15)' : 'inherit',
+                                                    animation: isHighlighted ? 'pulse-highlight 2s infinite' : 'none',
+                                                    transition: 'background-color 0.5s ease'
+                                                }} 
+                                                onClick={() => handleEdit(objRow)}
+                                            >
                                                 <TableCell padding="checkbox">
                                                     <Checkbox size="small" checked={isItemSelected} onChange={(e) => handleRowCheckboxClick(e, objRow.nTransactionsId)} onClick={(e) => e.stopPropagation()} />
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Box>
-                                                        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>
-                                                            {objRow.sTitleMain}
-                                                        </Typography>
-                                                        {objRow.sRecurringRuleName && (
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
-                                                                <SyncIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                                                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10 }}>
-                                                                    {objRow.sRecurringRuleName}
-                                                                </Typography>
-                                                            </Box>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        {objRow.isAnomaly && (
+                                                            <Box 
+                                                                title="Found anomaly in this transaction"
+                                                                sx={{ 
+                                                                    width: 8, height: 8, borderRadius: '50%', 
+                                                                    bgcolor: '#f43f5e', 
+                                                                    boxShadow: '0 0 8px #f43f5e' 
+                                                                }} 
+                                                            />
                                                         )}
+                                                        <Box>
+                                                            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>
+                                                                {objRow.sTitleMain}
+                                                            </Typography>
+                                                            {objRow.sRecurringRuleName && (
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.3 }}>
+                                                                    <SyncIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                                                                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10 }}>
+                                                                        {objRow.sRecurringRuleName}
+                                                                    </Typography>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
                                                     </Box>
                                                 </TableCell>
                                                 <TableCell><Chip label={objRow.sCategory} size="small" sx={{ bgcolor: objRow.sCatBg, color: objRow.sCatColor, fontSize: 11, fontWeight: 600, height: 22 }} /></TableCell>
@@ -478,8 +509,18 @@ export const TransactionsContainer = () => {
             <TransactionFormDialog
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
-                onSaved={() => {
-                    notify(objSelectedTx ? 'อัปเดตข้อมูลสำเร็จ' : 'เพิ่มข้อมูลสำเร็จ');
+                onSaved={(res) => {
+                    if (res?.isAnomaly) {
+                        notify(res.message || 'ตรวจพบความผิดปกติ!', 'warning');
+                    } else {
+                        notify(objSelectedTx ? 'อัปเดตข้อมูลสำเร็จ' : 'เพิ่มข้อมูลสำเร็จ');
+                    }
+                    
+                    // ล้าง highlight ออกจาก URL หลังจากบันทึกเสร็จ
+                    if (highlightId) {
+                        router.replace(pathname);
+                    }
+                    
                     fetchTransactions();
                     window.dispatchEvent(new CustomEvent('refreshAnomalyCount'));
                 }}
@@ -487,6 +528,13 @@ export const TransactionsContainer = () => {
             />
 
             {NotificationComponent}
+            <GlobalStyles styles={{
+                '@keyframes pulse-highlight': {
+                    '0%': { backgroundColor: 'rgba(244, 63, 94, 0.1)' },
+                    '50%': { backgroundColor: 'rgba(244, 63, 94, 0.25)' },
+                    '100%': { backgroundColor: 'rgba(244, 63, 94, 0.1)' }
+                }
+            }} />
         </Box>
     );
 };

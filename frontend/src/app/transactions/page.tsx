@@ -1,9 +1,13 @@
+"use client";
+import { Suspense } from 'react';
 import { TransactionsContainer } from '@/components/transactions/TransactionsContainer';
 
 export default function TransactionsPage() {
     return (
         <main>
-            <TransactionsContainer />
+            <Suspense fallback={null}>
+                <TransactionsContainer />
+            </Suspense>
         </main>
     );
 }
